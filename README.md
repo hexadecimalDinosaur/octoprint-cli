@@ -12,7 +12,7 @@ This project is a work in progress. Some features may not work as intended or be
 
 
 ## Screenshots
-![status commands](screenshots/Screenshot%20from%202020-04-30%2014-24-18.png)
+![status commands](screenshots/print-status.png)
 
 
 ## Dependencies
