@@ -41,7 +41,7 @@ try:
     destination = config['server']['ServerAddress']
     key = config['server']['ApiKey']
 except KeyError:
-    print(colored("Configuration file exists but not set up completely",'red'))
+    print(colored("Configuration file exists but not set up completely",'red', attrs=['bold']))
     exit(1)
 except FileNotFoundError:
     try:
@@ -50,7 +50,7 @@ except FileNotFoundError:
         destination = config['server']['ServerAddress']
         key = config['server']['ApiKey']
     except KeyError:
-        print(colored("Configuration file exists but not set up completely",'red'))
+        print(colored("Configuration file exists but not set up completely",'red', attrs=['bold']))
         exit(1)
     except FileNotFoundError:
         print("No config file exists")
@@ -65,7 +65,7 @@ header = {'Content-Type': 'application/json', 'X-API-Key':key}
 
 version = requests.get(destination+"/api/version", headers=header)
 if version.status_code == 404:
-    print("404: Server address not found")
+    print(colored("404: Server address not found or unreachable", 'red', attrs=['bold']))
     exit(1)
 
 try:
@@ -78,11 +78,8 @@ try:
     
     if args[1].lower() == "connection" and args[2].lower() == "status":
         request = requests.get(destination+"/api/connection", headers=header)
-        if version.status_code == 404:
-            print("404: Server address not found")
-            exit(1)
-        if version.status_code == 403:
-            print("403: Authentication fail")
+        if request.status_code == 403:
+            print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
             exit(1)
         data = request.json()
 
@@ -108,10 +105,19 @@ try:
 
     if args[1].lower() == "print" and args[2].lower() == "status":
         request = requests.get(destination+"/api/job", headers=header)
+        if request.status_code == 403:
+            print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
+            exit(1)
         data = request.json()
         
         if data['state'] == 'Offline': #printer disconnected
             print(colored("Printer Disconnected", 'red', attrs=['bold']))
+        elif data['state'].startswith('Offline'): #Offline status with error message following
+            print(colored("Printer Disconnected", 'red', attrs=['bold']))
+            print(data['state'])
+        elif data['state'].startswith('Error'): #Error status
+            print(colored("❌ Error", 'red', attrs=['bold']))
+            print(colored("Error: ", attrs=['bold'])+data['state'][7:])
         else:
             request2 = requests.get(destination+"/api/printer", headers=header) #this request will not work if printer disconnected
             data2 = request2.json()
@@ -146,7 +152,7 @@ try:
                 print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
                 print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
             elif data['state'] == "Error": #Error status
-                print(colored("Error", 'red', attrs=['bold'])) #TODO test and display error information
+                print(colored("Error", 'red', attrs=['bold']))
                 print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
                 print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
         exit(0)
