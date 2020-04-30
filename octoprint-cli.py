@@ -77,7 +77,7 @@ try:
         help_msg()
     
     if args[1].lower() == "connection" and args[2].lower() == "status":
-        request = requests.get("http://192.168.2.99/api/connection", headers=header)
+        request = requests.get(destination+"/api/connection", headers=header)
         if version.status_code == 404:
             print("404: Server address not found")
             exit(1)
@@ -86,52 +86,70 @@ try:
             exit(1)
         data = request.json()
 
-        if data['current']['state'] == 'Operational' or data['current']['state'] == 'Printing':
+        if data['current']['state'] == 'Operational' or data['current']['state'] == 'Printing': #connected status
             if data['current']['state'] == 'Operational':
                 print(colored("✅ Printer Operational", 'green', attrs=['bold']))
             if data['current']['state'] == 'Printing':
                 print(colored("✅ Printing", 'green', attrs=['bold']))
-            print(colored("Printer: ", 'white', attrs=['bold']) + data['options']['printerProfiles'][0]['name'])
-            print(colored("Port: ", 'white', attrs=['bold']) + data['current']['port'])
-            print(colored("Baudrate: ", 'white', attrs=['bold']) + str(data['current']['baudrate']))
+            print(colored("Printer Profile: ", attrs=['bold']) + data['options']['printerProfiles'][0]['name'])
+            print(colored("Port: ", attrs=['bold']) + data['current']['port'])
+            print(colored("Baudrate: ", attrs=['bold']) + str(data['current']['baudrate']))
+        elif data['current']['state'] == 'Closed': #disconnected
+            print(colored("❌ Printer Disconnected", 'red', attrs=['bold']))
+            print(colored("Ports: ", attrs=['bold'])+",".join(data['options']['ports']))
+            print(colored("Baudrates: ", attrs=['bold'])+", ".join(list(map(str,data['options']['baudrates']))))
+        elif data['current']['state'].startswith("Error"): #connection error
+            print(colored("❌ Error", 'red', attrs=['bold']))
+            print(colored("Error: ", attrs=['bold'])+data['current']['state'][7:])
+            print(colored("Ports: ", attrs=['bold'])+",".join(data['options']['ports']))
+            print(colored("Baudrates: ", attrs=['bold'])+", ".join(list(map(str,data['options']['baudrates']))))
         
         exit(0)
 
     if args[1].lower() == "print" and args[2].lower() == "status":
-        request = requests.get("http://192.168.2.99/api/job", headers=header)
+        request = requests.get(destination+"/api/job", headers=header)
         data = request.json()
-        request2 = requests.get("http://192.168.2.99/api/printer", headers=header)
-        data2 = request2.json()
-        if data['state'] == "Operational":
-            print(colored("Printer Operational", 'green', attrs=['bold']))
-            print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
-            print(colored("Estimated Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
-            print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
-            print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
-        elif data['state'] == "Printing":
-            print(colored("Printing", 'green', attrs=['bold']))
-            print(colored("File: ", attrs=['bold']) + data['job']['file']['name'])
-            print(colored("Estimated Total Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
-            print(colored("Estimated Print Time Left: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
-            print(colored("Progress: ", attrs=['bold']) + str(round(data['progress']['completion']))+"%")
-            print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
-            print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
-        elif data['state'] == "Paused":
-            print(colored("Paused", 'yellow', attrs=['bold']))
-            print(colored("File: ", attrs=['bold']) + data['job']['file']['name'])
-            print(colored("Estimated Total Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
-            print(colored("Estimated Print Time Left: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
-            print(colored("Progress: ", attrs=['bold']) + str(round(data['progress']['completion']))+"%")
-            print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
-            print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
-        elif data['state'] == "Cancelling":
-            print(colored("Cancelling", 'red', attrs=['bold']))
-            print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
-            print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
-        elif data['state'] == "Error":
-            print(colored("Error", 'red', attrs=['bold']))
-            print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
-            print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+        
+        if data['state'] == 'Offline': #printer disconnected
+            print(colored("Printer Disconnected", 'red', attrs=['bold']))
+        else:
+            request2 = requests.get(destination+"/api/printer", headers=header) #this request will not work if printer disconnected
+            data2 = request2.json()
+            if data['state'] == "Operational" and data['job']['file']['name'] != None: #Operational with file loaded
+                print(colored("Printer Operational", 'green', attrs=['bold']))
+                print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
+                print(colored("Estimated Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
+                print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+                print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+            elif data['state'] == "Operational" and data['job']['file']['name'] == None: #Operational without file loaded
+                print(colored("Printer Operational", 'green', attrs=['bold']))
+                print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+                print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+            elif data['state'] == "Printing": #Printing status
+                print(colored("Printing", 'green', attrs=['bold']))
+                print(colored("File: ", attrs=['bold']) + data['job']['file']['name'])
+                print(colored("Estimated Total Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
+                print(colored("Estimated Print Time Left: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
+                print(colored("Progress: ", attrs=['bold']) + str(round(data['progress']['completion']))+"%")
+                print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+                print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+            elif data['state'] == "Paused": #Paused status
+                print(colored("Paused", 'yellow', attrs=['bold']))
+                print(colored("File: ", attrs=['bold']) + data['job']['file']['name'])
+                print(colored("Estimated Total Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
+                print(colored("Estimated Print Time Left: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
+                print(colored("Progress: ", attrs=['bold']) + str(round(data['progress']['completion']))+"%")
+                print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+                print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+            elif data['state'] == "Cancelling": #Cancelling status
+                print(colored("Cancelling", 'red', attrs=['bold'])) #TODO test cancel status
+                print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+                print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+            elif data['state'] == "Error": #Error status
+                print(colored("Error", 'red', attrs=['bold'])) #TODO test and display error information
+                print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+                print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+        exit(0)
     
 except IndexError:
     print(colored("Not enough arguments provided", 'red'))
