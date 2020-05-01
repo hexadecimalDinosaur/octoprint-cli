@@ -17,6 +17,10 @@ This project is a work in progress. Some features may not work as intended or be
 * Listing files
 * Retrieving file/folder information
 
+## Limitations
+
+Currently, octoprint-cli is limited to only printers with a single extruder and bed. Support for additional extruders and chambers may be implemented in the future.
+
 ## Usage
 
 ```
