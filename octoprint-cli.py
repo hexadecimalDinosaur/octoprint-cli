@@ -43,6 +43,9 @@ def help_msg(): #help message
     print(name+" files list              list files in the root OctoPrint directory")
     print(name+" files list [dir]        list files in directory")
     print(name+" files info [file]       find information about file or directory")
+    print(name+" temp status             find printer temperature information")
+    print(name+" temp extruder [temp]    set extruder temperature")
+    print(name+" temp bed [temp]         set bed temperature")
     exit(0)
 
 if "-h" in args or "--help" in args:
@@ -69,6 +72,16 @@ except FileNotFoundError:
     except FileNotFoundError:
         print("No config file exists")
         exit(1)
+
+try:
+    if not config['printer']['MaxExtruderTemp'].isdigit():
+        print(colored("printer/MaxExtruderTemp in configuration file is not an integer value", 'red', attrs=['bold']))
+        exit(1)
+    if not config['printer']['MaxBedTemp'].isdigit():
+        print(colored("printer/MaxBedTemp in configuration file is not an integer value", 'red', attrs=['bold']))
+        exit(1)
+except KeyError:
+    pass
 
 if not(destination.startswith('http://') or destination.startswith('https://')): #add http if missing
     destination = "http://" + destination
@@ -429,11 +442,85 @@ try:
                     pass
             exit(0)
             
+    if args[1].lower() == "temp": #temp commands
+        request = requests.get(destination+"/api/job", headers=header)
+        if request.status_code == 403: #authentication fail
+            print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
+            exit(1)
+        data = request.json()
+
+        if args[2].lower() == "status": #temp status
+            request = requests.get(destination+"/api/printer/tool", headers=header)
+            if request.status_code == 409:
+                print(colored("Printer is not connected", 'red', attrs=['bold']))
+                exit(1)
+            data = request.json()
+            print(colored("Extruder Temp: ", attrs=['bold'])+str(data['tool0']['actual'])+"°C")
+            print(colored("Extruder Target Temp: ", attrs=['bold'])+str(data['tool0']['target'])+"°C")
+            request = requests.get(destination+"/api/printer/bed", headers=header)
+            if request.status_code == 409:
+                print(colored("Printer is not connected", 'red', attrs=['bold']))
+                exit(1)
+            data = request.json()
+            print(colored("Bed Temp: ", attrs=['bold'])+str(data['bed']['actual'])+"°C")
+            print(colored("Bed Temp: ", attrs=['bold'])+str(data['bed']['target'])+"°C")
+
+        elif args[2].lower() == "extruder": #temp extruder
+            try:
+                if args[3] == "off":
+                    args[3] = "0"
+                if not args[3].isdigit():
+                    print(colored("Invalid argument", "red", attrs=['bold']))
+                    exit(1)
+                try:
+                    if int(args[3]) > int(config['printer']['MaxExtruderTemp']):
+                        print(colored("Target is higher than temperature given in config file", "red", attrs=['bold']))
+                        exit(1)
+                except KeyError:
+                    pass
+            except IndexError:
+                print(colored("Missing argument, please add a temperature", "red", attrs=['bold']))
+            request = requests.post(destination+"/api/printer/tool", headers=header, data=json.dumps({"command":"target","targets":{"tool0":int(args[3])}}))
+            if request.status_code == 409:
+                print(colored("Printer cannot be reached", 'red', attrs=['bold']))
+                exit(1)
+            elif request.status_code == 204:
+                print("Extruder temp has been set to " + args[3] + "°C")
+                exit(0)
+            else:
+                print(colored("Unable to change extruder temp", 'red', attrs=['bold']))
+                exit(1)
+            
+        elif args[2].lower() == "bed": #temp bed
+            try:
+                if args[3] == "off":
+                    args[3] = "0"
+                if not args[3].isdigit():
+                    print(colored("Invalid argument", "red", attrs=['bold']))
+                try:
+                    if int(args[3]) > int(config['printer']['MaxBedTemp']):
+                        print(colored("Target is higher than temperature given in config file", "red", attrs=['bold']))
+                        exit(1)
+                except KeyError:
+                    pass
+            except IndexError:
+                print(colored("Missing argument, please add a temperature", "red", attrs=['bold']))
+            request = requests.post(destination+"/api/printer/bed", headers=header, data=json.dumps({"command":"target","target":int(args[3])}))
+            if request.status_code == 409:
+                print(colored("Printer cannot be reached", 'red', attrs=['bold']))
+                exit(1)
+            elif request.status_code == 204:
+                print("Bed temp has been set to " + args[3] + "°C")
+                exit(0)
+            else:
+                print(colored("Unable to change bed temp", 'red', attrs=['bold']))
+                exit(1)
+
 
 except IndexError: #not enough arguments
     print(colored("Not enough arguments provided", 'red', attrs=['bold']))
     exit(1)
 
-#TODO Temperature status and setting
+#TODO Limit temperature in config file
 #TODO Connect to printer
 #TODO Upload files
