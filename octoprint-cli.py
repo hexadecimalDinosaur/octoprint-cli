@@ -89,7 +89,7 @@ try:
     
     if args[1].lower() == "connection" and args[2].lower() == "status": #connection status
         request = requests.get(destination+"/api/connection", headers=header)
-        if request.status_code == 403:
+        if request.status_code == 403: #authentication test
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
             exit(1)
         data = request.json()
@@ -116,7 +116,7 @@ try:
 
     if args[1].lower() == "print" and args[2].lower() == "status": #print status
         request = requests.get(destination+"/api/job", headers=header)
-        if request.status_code == 403:
+        if request.status_code == 403: #authentication test
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
             exit(1)
         data = request.json()
@@ -178,22 +178,22 @@ try:
 
     if args[1].lower() == "print" and args[2].lower() == "start": #print start
         request = requests.get(destination+"/api/job", headers=header)
-        if request.status_code == 403:
+        if request.status_code == 403: #authentication test
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
             exit(1)
         data = request.json()
-        if data['job']['file']['name'] == None:
+        if data['job']['file']['name'] == None: #if no file has been selected for printing don't bother
             print("No file has been selected for printing")
             exit(1)
-        elif data['state'] != "Operational":
-            if data['state'] == "Printing":
+        elif data['state'] != "Operational": #if not idle don't bother
+            if data['state'] == "Printing": #if already printing don't bother
                 print(colored("Printer is already running a print job", 'red', attrs=['bold']))
                 print("Try running '"+args[0]+" print status' for more details")
-            else:
+            else: #if some other state something is wrong
                 print(colored("Printer cannot be reached", 'red', attrs=['bold']))
             exit(1)
         else:
-            request = requests.post(destination+"/api/job", headers=header, data=json.dumps({"command":"start"}))
+            request = requests.post(destination+"/api/job", headers=header, data=json.dumps({"command":"start"})) #make POST start request
             if request.status_code == 409:
                 print(colored("409: Server conflict", 'red', attrs=['bold']))
                 exit(1)
@@ -201,26 +201,26 @@ try:
     
     if args[1].lower() == "print" and args[2].lower() == "select": #print select
         request = requests.get(destination+"/api/job", headers=header)
-        if request.status_code == 403:
+        if request.status_code == 403: #authentication test
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
             exit(1)
         data = request.json()
-        if data['state'] != "Operational":
-            if data['state'] == "Printing":
+        if data['state'] != "Operational": #if printer is not idle don't bother
+            if data['state'] == "Printing": #if already printing prompt
                 print(colored("Printer is already running a print job", 'red', attrs=['bold']))
                 print("Try running '"+args[0]+" print status' for more details")
             else:
                 print(colored("Printer cannot be reached", 'red', attrs=['bold']))
             exit(1)
         else:
-            try:
+            try: #remove leading slash
                 if args[3].startswith("/"):
                     args[3] = args[3][1:]
             except IndexError:
                 print(colored("Not enough arguments provided: file not specified", 'red', attrs=['bold']))
                 exit(1)
             request = requests.post(destination+"/api/files/local/"+args[3], headers=header, data=json.dumps({"command":"select"}))
-            if request.status_code == 409:
+            if request.status_code == 409: #error codes
                 print(colored("409: Server conflict", 'red', attrs=['bold']))
                 exit(1)
             if request.status_code == 400:
@@ -230,24 +230,24 @@ try:
             if request.status_code != 204:
                 print(colored("File selection failed", 'red', attrs=['bold']))
                 exit(1)
-            else:
+            else: #show success
                 print(args[3]+" selected")
         exit(0)
     
     if args[1].lower() == "print" and args[2].lower() == "pause": #print pause
         request = requests.get(destination+"/api/job", headers=header)
-        if request.status_code == 403:
+        if request.status_code == 403: #authentication test
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
             exit(1)
         data = request.json()
 
-        if data['state'] == "Operational":
+        if data['state'] == "Operational": #if not printing don't bother
             print(colored("Printer is not printing", 'red', attrs=['bold']))
             print("Try running '"+args[0]+" print status' for more details")
-        elif data['state'] == "Paused":
+        elif data['state'] == "Paused": #if already paused don't bother
             print(colored("Printer is already paused", 'red', attrs=['bold']))
             exit(0)
-        elif data['state'] != "Printing":
+        elif data['state'] != "Printing": #if some other state something is wrong
             print(colored("Printer cannot be reached", 'red', attrs=['bold']))
             exit(1)
         else:
@@ -259,23 +259,23 @@ try:
 
     if args[1].lower() == "print" and args[2].lower() == "resume": #print resume
         request = requests.get(destination+"/api/job", headers=header)
-        if request.status_code == 403:
+        if request.status_code == 403: #authentication test
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
             exit(1)
         data = request.json()
 
-        if data['state'] == "Operational":
+        if data['state'] == "Operational": #if not printing don't bother
             print(colored("Printer is not printing", 'red', attrs=['bold']))
             print("Try running '"+args[0]+" print status' for more details")
             exit(1)
-        elif data['state'] == "Printing":
+        elif data['state'] == "Printing": #if not paused don't bother
             print(colored("Printer is not paused", 'red', attrs=['bold']))
             exit(1)
-        elif data['state'] != "Paused":
+        elif data['state'] != "Paused": #if other state something is wrong
             print(colored("Printer cannot be reached", 'red', attrs=['bold']))
             exit(1)
         else:
-            request = requests.post(destination+"/api/job", headers=header, data=json.dumps({"command":"pause", "action":"resume"}))
+            request = requests.post(destination+"/api/job", headers=header, data=json.dumps({"command":"pause", "action":"resume"})) #resume request
             if request.status_code == 409:
                 print(colored("409: Server conflict", 'red', attrs=['bold']))
                 exit(1)
@@ -288,14 +288,15 @@ try:
             exit(1)
         data = request.json()
 
-        if data['state'] == "Operational":
+        if data['state'] == "Operational": #if nothing printing don't bother
             print(colored("Printer is not printing", 'red', attrs=['bold']))
             print("Try running '"+args[0]+" print status' for more details")
-        elif data['state'] != "Printing":
+            exit(1)
+        elif data['state'] != "Printing": #if other status something is wrong
             print(colored("Printer cannot be reached", 'red', attrs=['bold']))
             exit(1)
         else:
-            request = requests.post(destination+"/api/job", headers=header, data=json.dumps({"command":"cancel"}))
+            request = requests.post(destination+"/api/job", headers=header, data=json.dumps({"command":"cancel"})) #cancel request
             if request.status_code == 409:
                 print(colored("409: Server conflict", 'red', attrs=['bold']))
                 exit(1)
@@ -303,21 +304,21 @@ try:
 
     if args[1].lower() == "system": #system commands
         request = requests.get(destination+"/api/job", headers=header)
-        if request.status_code == 403:
+        if request.status_code == 403: #authentication test
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
             exit(1)
         data = request.json()
 
-        if data['state'] in ("Printing", "Pausing", "Paused"):
+        if data['state'] in ("Printing", "Pausing", "Paused"): #stop system commands from running if in printing state
             print(colored("The printer is currently printing, please cancel the operation before trying again", 'red', attrs=['bold']))
             exit(1)
 
         if args[2].lower() == "shutdown": #system shutdown
-            prompt = input("You are shutting down the system. Are you sure you wish to continue? [Y/n]: ")
+            prompt = input("You are shutting down the system. Are you sure you wish to continue? [Y/n]: ") #prompt for confirmation
             if not(prompt.lower() == "y" or prompt.lower == "yes"):
                 exit(0)
-            request = requests.post(destination+"/api/system/commands/core/shutdown", headers=header)
-            if request.status_code != 204:
+            request = requests.post(destination+"/api/system/commands/core/shutdown", headers=header) #make POST request
+            if request.status_code != 204: #see if successful
                 print(colored("Shutdown Failed", 'red', attrs=['bold']))
             else:
                 print("Shutdown Initialized")
@@ -351,54 +352,54 @@ try:
 
     if args[1].lower() == "files": #file commands
         request = requests.get(destination+"/api/job", headers=header)
-        if request.status_code == 403:
+        if request.status_code == 403: #authentication fail
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
             exit(1)
         data = request.json()
 
         if args[2].lower() == "list": #files list
             container = 'files'
-            try:
-                if args[3].startswith("/"):
+            try: #if folder parameter given
+                if args[3].startswith("/"): #remove leading slash
                      args[3] = args[3][1:]
-                request = requests.get(destination+"/api/files/local/"+args[3], headers=header)
-                if request.status_code == 404:
+                request = requests.get(destination+"/api/files/local/"+args[3], headers=header) #make request
+                if request.status_code == 404: #folder not found error
                     print(colored("Folder does not exist", 'red', attrs=['bold']))
                     exit(1)
                 print("Listing files in " + args[3])
                 container = 'children'
-            except IndexError:
+            except IndexError: #if folder parameter not given
                 request = requests.get(destination+"/api/files", headers=header)
-            data = request.json()
+            data = request.json() #convert to dictionary
             
-            longestName=0
+            longestName=0 # locate longest names to calculate spacing
             longestType=0
             for i in data[container]:
                 if len(i['name']) > longestName: longestName = len(i['name'])
                 if len(i['type']) > longestType: longestType = len(i['type'])
             
-            print(colored("NAME", attrs=['bold']) + (" "*longestName) + colored("TYPE", attrs=['bold']) + (" "*longestType) + colored("SIZE", attrs=['bold']))
+            print(colored("NAME", attrs=['bold']) + (" "*longestName) + colored("TYPE", attrs=['bold']) + (" "*longestType) + colored("SIZE", attrs=['bold'])) #table headings
             longestName+=4
             longestType+=4
-            for i in data[container]:
+            for i in data[container]: #loop through all files and display information
                 print(i['name'] + ((longestName-len(i['name']))*" ") + i['type'] + ((longestType-len(i['type']))*" "),end='')
-                try:
+                try: #some files dont have sizes
                     if i['type'] != 'folder': print(str(round(i['size']/1048576.0,2)) + " MB")
-                    else: print()
+                    else: print() #if folder than leave empty
                 except KeyError: print()
-            if container=='files': print(colored("\nFree space: ", attrs=['bold'])+str(round(data['free']/1073741824.0,3))+" GB")
+            if container=='files': print(colored("\nFree space: ", attrs=['bold'])+str(round(data['free']/1073741824.0,3))+" GB") #disk space
             exit(0)
         
         if args[2].lower() == "info":
-            try:
+            try: #remove leading slash
                 if args[3].startswith("/"):
                     args[3] = args[3][1:]
             except IndexError:
                 print(colored("Not enough arguments given", 'red', attrs=['bold']))
                 exit(1)
-            request = requests.get(destination+"/api/files/local/"+args[3], headers=header)
+            request = requests.get(destination+"/api/files/local/"+args[3], headers=header) #make request
 
-            if request.status_code == 404 or request.status_code == 500:
+            if request.status_code == 404 or request.status_code == 500: #file dont exist
                 print(colored("File does not exist", 'red', attrs=['bold']))
                 print("Try checking your spelling or including the full path")
                 exit(1)
@@ -423,10 +424,8 @@ try:
                     print(colored("Failed Prints: ", attrs=['bold'])+str(data['prints']['failure']))
                 except KeyError:
                     pass
+            exit(0)
             
-            
-
-
 
 except IndexError: #not enough arguments
     print(colored("Not enough arguments provided", 'red', attrs=['bold']))
