@@ -37,6 +37,8 @@ def help_msg():
     print(name+" system reboot           reboot server")
     print(name+" system restart          restart OctoPrint server")
     print(name+" system restart-safe     restart OctoPrint server to safe mode")
+    print(name+" files list              list files in the root OctoPrint directory")
+    print(name+" files list [dir]        list files in directory")
     exit(0)
 
 if "-h" in args or "--help" in args:
@@ -216,14 +218,13 @@ try:
             except IndexError:
                 print(colored("Not enough arguments provided: file not specified", 'red', attrs=['bold']))
                 exit(1)
-            request = requests.post(destination+"/api/files/"+args[3], headers=header, data=json.dumps({"command":"select"}))
+            request = requests.post(destination+"/api/files/local/"+args[3], headers=header, data=json.dumps({"command":"select"}))
             if request.status_code == 409:
                 print(colored("409: Server conflict", 'red', attrs=['bold']))
                 exit(1)
             if request.status_code == 400:
                 print(colored("File does not exist", 'red', attrs=['bold']))
-                print("If the file exists you may be missing the path")
-                print("add 'local/' for files on the server or 'sdcard/' for files on the printer's storage")
+                print("If the file exists you may be missing the full path")
                 exit(1)
             if request.status_code != 204:
                 print(colored("File selection failed", 'red', attrs=['bold']))
@@ -347,12 +348,50 @@ try:
             else:
                 print("Server is restarting into safe mode")
 
+    if args[1].lower() == "files":
+        request = requests.get(destination+"/api/job", headers=header)
+        if request.status_code == 403:
+            print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
+            exit(1)
+        data = request.json()
+
+        if args[2].lower() == "list": #list file command
+            container = 'files'
+            try:
+                if args[3].startswith("/"):
+                     args[3] = args[3][1:]
+                request = requests.get(destination+"/api/files/local/"+args[3], headers=header)
+                if request.status_code == 404:
+                    print(colored("Folder does not exist", 'red', attrs=['bold']))
+                    exit(1)
+                print("Listing files in " + args[3])
+                container = 'children'
+            except IndexError:
+                request = requests.get(destination+"/api/files", headers=header)
+            data = request.json()
+            
+            longestName=0
+            longestType=0
+            for i in data[container]:
+                if len(i['name']) > longestName: longestName = len(i['name'])
+                if len(i['type']) > longestType: longestType = len(i['type'])
+            
+            print(colored("NAME", attrs=['bold']) + (" "*longestName) + colored("TYPE", attrs=['bold']) + (" "*longestType) + colored("SIZE", attrs=['bold']))
+            longestName+=4
+            longestType+=4
+            for i in data[container]:
+                print(i['name'] + ((longestName-len(i['name']))*" ") + i['type'] + ((longestType-len(i['type']))*" "),end='')
+                try:
+                    if i['type'] != 'folder': print(str(round(i['size']/1048576.0,2)) + " MB")
+                    else: print()
+                except KeyError: print()
+
+
 
 except IndexError: #not enough arguments
     print(colored("Not enough arguments provided", 'red', attrs=['bold']))
     exit(1)
 
-#TODO Server file listing
 #TODO Retreive file information
 #TODO Temperature status and setting
 #TODO Connect to printer
