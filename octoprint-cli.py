@@ -39,6 +39,7 @@ def help_msg():
     print(name+" system restart-safe     restart OctoPrint server to safe mode")
     print(name+" files list              list files in the root OctoPrint directory")
     print(name+" files list [dir]        list files in directory")
+    print(name+" files info [file]       find information about file or directory")
     exit(0)
 
 if "-h" in args or "--help" in args:
@@ -348,14 +349,14 @@ try:
             else:
                 print("Server is restarting into safe mode")
 
-    if args[1].lower() == "files":
+    if args[1].lower() == "files": #file commands
         request = requests.get(destination+"/api/job", headers=header)
         if request.status_code == 403:
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
             exit(1)
         data = request.json()
 
-        if args[2].lower() == "list": #list file command
+        if args[2].lower() == "list": #files list
             container = 'files'
             try:
                 if args[3].startswith("/"):
@@ -385,6 +386,45 @@ try:
                     if i['type'] != 'folder': print(str(round(i['size']/1048576.0,2)) + " MB")
                     else: print()
                 except KeyError: print()
+            if container=='files': print(colored("\nFree space: ", attrs=['bold'])+str(round(data['free']/1073741824.0,3))+" GB")
+            exit(0)
+        
+        if args[2].lower() == "info":
+            try:
+                if args[3].startswith("/"):
+                    args[3] = args[3][1:]
+            except IndexError:
+                print(colored("Not enough arguments given", 'red', attrs=['bold']))
+                exit(1)
+            request = requests.get(destination+"/api/files/local/"+args[3], headers=header)
+
+            if request.status_code == 404 or request.status_code == 500:
+                print(colored("File does not exist", 'red', attrs=['bold']))
+                print("Try checking your spelling or including the full path")
+                exit(1)
+            data = request.json()
+            print(colored("Name: ", attrs=['bold'])+data['name'])
+            print(colored("Path: ", attrs=['bold'])+data['refs']['resource'].replace(destination+'/api/files/local/',''))
+            print(colored("Type: ", attrs=['bold'])+data['type'])
+            try:
+                print(colored("Size: ", attrs=['bold'])+str(round(data['size']/1048576.0,2))+" MB")
+            except KeyError:
+                pass
+            if data['type'] == 'machinecode':
+                try:
+                    print(colored("Estimated Print Time: ", attrs=['bold'])+str(datetime.timedelta(seconds=data['gcodeAnalysis']['estimatedPrintTime'])).split(".")[0])
+                except KeyError:
+                    pass
+                try:
+                    print(colored("Successful Prints: ", attrs=['bold'])+str(data['prints']['success']))
+                except KeyError:
+                    pass
+                try:
+                    print(colored("Failed Prints: ", attrs=['bold'])+str(data['prints']['failure']))
+                except KeyError:
+                    pass
+            
+            
 
 
 
@@ -392,7 +432,6 @@ except IndexError: #not enough arguments
     print(colored("Not enough arguments provided", 'red', attrs=['bold']))
     exit(1)
 
-#TODO Retreive file information
 #TODO Temperature status and setting
 #TODO Connect to printer
 #TODO Upload files

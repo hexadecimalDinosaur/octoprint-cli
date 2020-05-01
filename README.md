@@ -14,6 +14,8 @@ This project is a work in progress. Some features may not work as intended or be
 * Pause, resume, cancel prints
 * Start print
 * System commands (shutdown, reboot, restart)
+* Listing files
+* Retrieving file/folder information
 
 ## Usage
 
@@ -38,6 +40,7 @@ octoprint-cli system restart          restart OctoPrint server
 octoprint-cli system restart-safe     restart OctoPrint server to safe mode
 octoprint-cli files list              list files in the root OctoPrint directory
 octoprint-cli files list [dir]        list files in directory
+octoprint-cli files info [file]       find information about file or directory
 ```
 
 ## Screenshots
@@ -63,7 +66,6 @@ ApiKey = API_KEY_HERE
 
 ## Todo List
 
-* Retreive file information
 * Temperature status and setting
 * Connect to printer
 * Upload files
