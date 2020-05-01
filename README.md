@@ -19,7 +19,7 @@ This project is a work in progress. Some features may not work as intended or be
 
 ```
 octoprint-cli
-======================================================================
+================================================================================
 python3 command line tool for controlling OctoPrint servers
 
 COMMANDS

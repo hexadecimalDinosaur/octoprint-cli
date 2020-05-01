@@ -20,7 +20,7 @@ args = sys.argv
 def help_msg():
     name = args[0]
     print("octoprint-cli")
-    print("======================================================================")
+    print("================================================================================")
     print("python3 command line tool for controlling OctoPrint servers")
     print()
     print("COMMANDS")
