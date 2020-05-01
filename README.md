@@ -1,5 +1,7 @@
 # octoprint-cli
 
+![icon](icon/icon.png)
+
 python3 command line tool for controlling OctoPrint servers
 
 This tool uses the OctoPrint API to control and view the status of 3D printers connected to OctoPrint servers
