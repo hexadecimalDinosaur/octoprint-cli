@@ -19,7 +19,7 @@ This project is a work in progress. Some features may not work as intended or be
 
 ## Limitations
 
-Currently, octoprint-cli is limited to only printers with a single extruder and bed. Support for additional extruders and chambers may be implemented in the future.
+Currently, octoprint-cli is limited to only printers with a single extruder and bed. Support for additional extruders and chambers may be implemented in the future. This program has been tested on OctoPi 0.17.0 on the Raspberry Pi 4 running OctoPrint 1.4.0 with a Monoprice Select Mini V2
 
 ## Usage
 
@@ -45,6 +45,9 @@ octoprint-cli system restart-safe     restart OctoPrint server to safe mode
 octoprint-cli files list              list files in the root OctoPrint directory
 octoprint-cli files list [dir]        list files in directory
 octoprint-cli files info [file]       find information about file or directory
+octoprint-cli temp status             find printer temperature information
+octoprint-cli temp extruder [temp]    set extruder temperature
+octoprint-cli temp bed [temp]         set bed temperature
 ```
 
 ## Screenshots
@@ -64,8 +67,15 @@ A sample config file has been included in `sample-config.ini`
 
 ```ini
 [server]
+;Set OctoPrint server address and x-api-key
 ServerAddress = SERVER_ADDRESS_HERE
 ApiKey = API_KEY_HERE
+
+
+[printer]
+;Set maximum temperature that printer can be set too
+MaxExtruderTemp = 250
+MaxBedTemp = 85
 ```
 
 ## Todo List
