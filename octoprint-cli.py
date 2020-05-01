@@ -23,29 +23,31 @@ args = sys.argv
 def help_msg(): #help message
     name = args[0]
     print("octoprint-cli")
-    print("================================================================================")
+    print("========================================================================================================================")
     print("python3 command line tool for controlling OctoPrint servers")
     print()
     print("COMMANDS")
-    print(name+" help                    view this help message")
-    print(name+" version                 view OctoPrint server version")
-    print(name+" connection status       view printer connection status")
-    print(name+" print status            view print status")
-    print(name+" print start             start printing loaded file")
-    print(name+" print select [file]     load file to be printed")
-    print(name+" print pause             pause print")
-    print(name+" print resume            resume print if paused")
-    print(name+" print cancel            cancel current print")
-    print(name+" system shutdown         shutdown server")
-    print(name+" system reboot           reboot server")
-    print(name+" system restart          restart OctoPrint server")
-    print(name+" system restart-safe     restart OctoPrint server to safe mode")
-    print(name+" files list              list files in the root OctoPrint directory")
-    print(name+" files list [dir]        list files in directory")
-    print(name+" files info [file]       find information about file or directory")
-    print(name+" temp status             find printer temperature information")
-    print(name+" temp extruder [temp]    set extruder temperature")
-    print(name+" temp bed [temp]         set bed temperature")
+    print(name+" help                                                           view this help message")
+    print(name+" version                                                        view OctoPrint server version")
+    print(name+" print status                                                   view print status")
+    print(name+" print start                                                    start printing loaded file")
+    print(name+" print select [file]                                            load file to be printed")
+    print(name+" print pause                                                    pause print")
+    print(name+" print resume                                                   resume print if paused")
+    print(name+" print cancel                                                   cancel current print")
+    print(name+" system shutdown                                                shutdown server")
+    print(name+" system reboot                                                  reboot server")
+    print(name+" system restart                                                 restart OctoPrint server")
+    print(name+" system restart-safe                                            restart OctoPrint server to safe mode")
+    print(name+" files list                                                     list files in the root OctoPrint directory")
+    print(name+" files list [dir]                                               list files in directory")
+    print(name+" files info [file]                                              find information about file or directory")
+    print(name+" temp status                                                    find printer temperature information")
+    print(name+" temp extruder [temp]                                           set extruder temperature")
+    print(name+" temp bed [temp]                                                set bed temperature")
+    print(name+" connection status                                              view printer connection status")
+    print(name+" connection connect [port /dev/ttyACM0] [baudrate 115200]       connect to printer")
+    print(name+" connection disconnect                                          disconnect from printer")
     exit(0)
 
 if "-h" in args or "--help" in args:
@@ -100,10 +102,10 @@ try:
         print("OctoPrint v" + version.json()['server'] + " - API v" + version.json()['api'])
         exit(0)
     
-    if args[1].lower() == "help": #help
+    elif args[1].lower() == "help": #help
         help_msg()
     
-    if args[1].lower() == "connection" and args[2].lower() == "status": #connection status
+    elif args[1].lower() == "connection" and args[2].lower() == "status": #connection status
         request = requests.get(destination+"/api/connection", headers=header)
         if request.status_code == 403: #authentication test
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
@@ -130,7 +132,7 @@ try:
         
         exit(0)
 
-    if args[1].lower() == "print" and args[2].lower() == "status": #print status
+    elif args[1].lower() == "print" and args[2].lower() == "status": #print status
         request = requests.get(destination+"/api/job", headers=header)
         if request.status_code == 403: #authentication test
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
@@ -192,7 +194,7 @@ try:
                 print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
         exit(0)
 
-    if args[1].lower() == "print" and args[2].lower() == "start": #print start
+    elif args[1].lower() == "print" and args[2].lower() == "start": #print start
         request = requests.get(destination+"/api/job", headers=header)
         if request.status_code == 403: #authentication test
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
@@ -215,7 +217,7 @@ try:
                 exit(1)
         exit(0)
     
-    if args[1].lower() == "print" and args[2].lower() == "select": #print select
+    elif args[1].lower() == "print" and args[2].lower() == "select": #print select
         request = requests.get(destination+"/api/job", headers=header)
         if request.status_code == 403: #authentication test
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
@@ -250,7 +252,7 @@ try:
                 print(args[3]+" selected")
         exit(0)
     
-    if args[1].lower() == "print" and args[2].lower() == "pause": #print pause
+    elif args[1].lower() == "print" and args[2].lower() == "pause": #print pause
         request = requests.get(destination+"/api/job", headers=header)
         if request.status_code == 403: #authentication test
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
@@ -273,7 +275,7 @@ try:
                 exit(1)
         exit(0)
 
-    if args[1].lower() == "print" and args[2].lower() == "resume": #print resume
+    elif args[1].lower() == "print" and args[2].lower() == "resume": #print resume
         request = requests.get(destination+"/api/job", headers=header)
         if request.status_code == 403: #authentication test
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
@@ -297,7 +299,7 @@ try:
                 exit(1)
         exit(0)
 
-    if args[1].lower() == "print" and args[2].lower() == "cancel": #print cancel
+    elif args[1].lower() == "print" and args[2].lower() == "cancel": #print cancel
         request = requests.get(destination+"/api/job", headers=header)
         if request.status_code == 403:
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
@@ -318,7 +320,7 @@ try:
                 exit(1)
         exit(0)
 
-    if args[1].lower() == "system": #system commands
+    elif args[1].lower() == "system": #system commands
         request = requests.get(destination+"/api/job", headers=header)
         if request.status_code == 403: #authentication test
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
@@ -365,8 +367,11 @@ try:
                 print(colored("Restart Failed", 'red', attrs=['bold']))
             else:
                 print("Server is restarting into safe mode")
-
-    if args[1].lower() == "files": #file commands
+        else:
+            print(colored("Invalid arguments", 'red', attrs=['bold']))
+            exit(1)
+        
+    elif args[1].lower() == "files": #file commands
         request = requests.get(destination+"/api/job", headers=header)
         if request.status_code == 403: #authentication fail
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
@@ -406,7 +411,7 @@ try:
             if container=='files': print(colored("\nFree space: ", attrs=['bold'])+str(round(data['free']/1073741824.0,3))+" GB") #disk space
             exit(0)
         
-        if args[2].lower() == "info":
+        elif args[2].lower() == "info":
             try: #remove leading slash
                 if args[3].startswith("/"):
                     args[3] = args[3][1:]
@@ -441,8 +446,12 @@ try:
                 except KeyError:
                     pass
             exit(0)
-            
-    if args[1].lower() == "temp": #temp commands
+
+        else:
+            print(colored("Invalid arguments", 'red', attrs=['bold']))
+            exit(1)
+
+    elif args[1].lower() == "temp": #temp commands
         request = requests.get(destination+"/api/job", headers=header)
         if request.status_code == 403: #authentication fail
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
@@ -515,6 +524,73 @@ try:
             else:
                 print(colored("Unable to change bed temp", 'red', attrs=['bold']))
                 exit(1)
+
+        else:
+            print(colored("Invalid arguments", 'red', attrs=['bold']))
+            exit(1)
+
+    elif args[1].lower() == "connection": #connection commands
+        request = requests.get(destination+"/api/job", headers=header)
+        if request.status_code == 403: #authentication fail
+            print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
+            exit(1)
+        data = request.json()
+
+        if args[2].lower() == "connect": #connection connect
+            if not(data['state'] == "Offline" or data['state'].startswith("Error")):
+                print(colored("Printer already connected", 'red', attrs=['bold']))
+                exit(1)
+            port=""
+            baudrate=0
+            try:
+                if args[3] == 'port':
+                    port = args[4]
+                if args[3] == 'baudrate':
+                    baudrate = int(args[4])
+            except IndexError:
+                pass
+            try:
+                if args[5] == 'port':
+                    port = args[6]
+                if args[5] == 'baudrate':
+                    baudrate = int(args[6])
+            except IndexError:
+                pass
+            data = {'command':'connect'}
+            if port != "":
+                data['port'] = port
+            if baudrate != 0:
+                data['baudrate'] = baudrate
+            request = requests.post(destination+"/api/connection", headers=header, data=json.dumps(data))
+            if request.status_code != 204:
+                print(colored("Printer connection failed", 'red', attrs=['bold']))
+                exit(1)
+            else:
+                print("Printer connected")
+                exit(0)
+
+        elif args[2].lower() == "disconnect": #connection disconnect
+            if data['state'] == "Offline" or data['state'].startswith("Error"):
+                print(colored("Printer already disconnected", 'red', attrs=['bold']))
+                exit(1)
+            if data['state'] != "Operational":
+                print(colored("Printer is printing, to disconnect cancel the current operation", 'red', attrs=['bold']))
+                exit(1)
+            request = requests.post(destination+"/api/connection", headers=header, data=json.dumps({"command":"disconnect"}))
+            if request.status_code != 204:
+                print(colored("Printer disconnection failed", 'red', attrs=['bold']))
+                exit(1)
+            else:
+                print("Printer disconnected")
+                exit(0)
+        
+        else:
+            print(colored("Invalid arguments", 'red', attrs=['bold']))
+            exit(1)
+
+    else: #invalid
+        print(colored("Invalid arguments", 'red', attrs=['bold']))
+        exit(1)
 
 
 except IndexError: #not enough arguments
