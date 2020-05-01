@@ -56,7 +56,7 @@ if "-h" in args or "--help" in args:
 config = configparser.ConfigParser() #load config file
 try:
     open('config.ini')
-    config.read('config.ini')
+    config.read(os.path.join(sys.path[0],'config.ini'))
     destination = config['server']['ServerAddress']
     key = config['server']['ApiKey']
 except KeyError:
