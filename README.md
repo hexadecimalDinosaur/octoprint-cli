@@ -36,6 +36,8 @@ octoprint-cli system shutdown         shutdown server
 octoprint-cli system reboot           reboot server
 octoprint-cli system restart          restart OctoPrint server
 octoprint-cli system restart-safe     restart OctoPrint server to safe mode
+octoprint-cli files list              list files in the root OctoPrint directory
+octoprint-cli files list [dir]        list files in directory
 ```
 
 ## Screenshots
@@ -61,7 +63,6 @@ ApiKey = API_KEY_HERE
 
 ## Todo List
 
-* Server file listing
 * Retreive file information
 * Temperature status and setting
 * Connect to printer
