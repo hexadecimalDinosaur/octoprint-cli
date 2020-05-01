@@ -27,6 +27,12 @@ Currently, octoprint-cli is limited to only printers with a single extruder and 
 
 Colored and formatted text is not available on Windows systems due to the lack of support on cmd and powershell terminals
 
+## Installation
+
+Windows users can grab the application from [releases](https://github.com/UserBlackBox/octoprint-cli/releases)
+
+Linux users can drop the python program in their user bin folder
+
 ## Usage
 
 ```
