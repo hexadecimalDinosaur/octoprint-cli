@@ -25,7 +25,7 @@ This project is a work in progress. Some features may not work as intended or be
 
 Currently, octoprint-cli is limited to only printers with a single extruder and bed. Support for additional extruders and chambers may be implemented in the future. This program has been tested on OctoPi 0.17.0 on the Raspberry Pi 4 running OctoPrint 1.4.0 with a Monoprice Select Mini V2.
 
-Colored and fomatted text is not available on Windows systems due to the lack of support on cmd and powershell terminals
+Colored and formatted text is not available on Windows systems due to the lack of support on cmd and powershell terminals
 
 ## Usage
 
