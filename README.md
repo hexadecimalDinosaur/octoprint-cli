@@ -16,6 +16,7 @@ This project is a work in progress. Some features may not work as intended or be
 * System commands (shutdown, reboot, restart)
 * Listing files
 * Retrieving file/folder information
+* Setting extruder and bed temperature
 
 ## Limitations
 
@@ -80,6 +81,5 @@ MaxBedTemp = 85
 
 ## Todo List
 
-* Temperature status and setting
 * Connect to printer
 * Upload files
