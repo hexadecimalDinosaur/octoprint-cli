@@ -15,7 +15,6 @@ if os.name=='nt':
 else:
     from termcolor import colored
 
-
 args = sys.argv
 
 def help_msg():
@@ -29,12 +28,17 @@ def help_msg():
     print(name+" version                 view OctoPrint server version")
     print(name+" connection status       view printer connection status")
     print(name+" print status            view print status")
+    print(name+" print start             start printing loaded file")
+    print(name+" print select [file]     load file to be printed")
+    print(name+" print pause             pause print")
+    print(name+" print resume            resume print if paused")
+    print(name+" print cancel            cancel current print")
     exit(0)
 
 if "-h" in args or "--help" in args:
     help_msg()
 
-config = configparser.ConfigParser()
+config = configparser.ConfigParser() #load config file
 try:
     open('config.ini')
     config.read('config.ini')
@@ -56,27 +60,27 @@ except FileNotFoundError:
         print("No config file exists")
         exit(1)
 
-if not(destination.startswith('http://') or destination.startswith('https://')):
+if not(destination.startswith('http://') or destination.startswith('https://')): #add http if missing
     destination = "http://" + destination
-if destination.endswith('/'):
+if destination.endswith('/'): #remove trailing slash
     destination = destination[:-1]
 
 header = {'Content-Type': 'application/json', 'X-API-Key':key}
 
-version = requests.get(destination+"/api/version", headers=header)
+version = requests.get(destination+"/api/version", headers=header) #test if server reachable
 if version.status_code == 404:
     print(colored("404: Server address not found or unreachable", 'red', attrs=['bold']))
     exit(1)
 
 try:
-    if args[1].lower() == "version":
+    if args[1].lower() == "version": #version
         print("OctoPrint v" + version.json()['server'] + " - API v" + version.json()['api'])
         exit(0)
     
-    if args[1].lower() == "help":
+    if args[1].lower() == "help": #help
         help_msg()
     
-    if args[1].lower() == "connection" and args[2].lower() == "status":
+    if args[1].lower() == "connection" and args[2].lower() == "status": #connection status
         request = requests.get(destination+"/api/connection", headers=header)
         if request.status_code == 403:
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
@@ -103,7 +107,7 @@ try:
         
         exit(0)
 
-    if args[1].lower() == "print" and args[2].lower() == "status":
+    if args[1].lower() == "print" and args[2].lower() == "status": #print status
         request = requests.get(destination+"/api/job", headers=header)
         if request.status_code == 403:
             print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
@@ -147,8 +151,16 @@ try:
                 print(colored("Progress: ", attrs=['bold']) + str(round(data['progress']['completion']))+"%")
                 print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
                 print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+            elif data['state'] == "Pausing": #Paused status
+                print(colored("Pausing", 'yellow', attrs=['bold']))
+                print(colored("File: ", attrs=['bold']) + data['job']['file']['name'])
+                print(colored("Estimated Total Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
+                print(colored("Estimated Print Time Left: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
+                print(colored("Progress: ", attrs=['bold']) + str(round(data['progress']['completion']))+"%")
+                print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+                print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
             elif data['state'] == "Cancelling": #Cancelling status
-                print(colored("Cancelling", 'red', attrs=['bold'])) #TODO test cancel status
+                print(colored("Cancelling", 'red', attrs=['bold']))
                 print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
                 print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
             elif data['state'] == "Error": #Error status
@@ -156,7 +168,143 @@ try:
                 print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
                 print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
         exit(0)
+
+    if args[1].lower() == "print" and args[2].lower() == "start": #print start
+        request = requests.get(destination+"/api/job", headers=header)
+        if request.status_code == 403:
+            print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
+            exit(1)
+        data = request.json()
+        if data['job']['file']['name'] == None:
+            print("No file has been selected for printing")
+            exit(1)
+        elif data['state'] != "Operational":
+            if data['state'] == "Printing":
+                print(colored("Printer is already running a print job", 'red', attrs=['bold']))
+                print("Try running '"+args[0]+" print status' for more details")
+            else:
+                print(colored("Printer cannot be reached", 'red', attrs=['bold']))
+            exit(1)
+        else:
+            request = requests.post(destination+"/api/job", headers=header, data=json.dumps({"command":"start"}))
+            if request.status_code == 409:
+                print(colored("409: Server conflict", 'red', attrs=['bold']))
+                exit(1)
+        exit(0)
     
-except IndexError:
-    print(colored("Not enough arguments provided", 'red'))
+    if args[1].lower() == "print" and args[2].lower() == "select": #print select
+        request = requests.get(destination+"/api/job", headers=header)
+        if request.status_code == 403:
+            print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
+            exit(1)
+        data = request.json()
+        if data['state'] != "Operational":
+            if data['state'] == "Printing":
+                print(colored("Printer is already running a print job", 'red', attrs=['bold']))
+                print("Try running '"+args[0]+" print status' for more details")
+            else:
+                print(colored("Printer cannot be reached", 'red', attrs=['bold']))
+            exit(1)
+        else:
+            try:
+                if args[3].startswith("/"):
+                    args[3] = args[3][1:]
+            except IndexError:
+                print(colored("Not enough arguments provided: file not specified", 'red', attrs=['bold']))
+                exit(1)
+            request = requests.post(destination+"/api/files/"+args[3], headers=header, data=json.dumps({"command":"select"}))
+            if request.status_code == 409:
+                print(colored("409: Server conflict", 'red', attrs=['bold']))
+                exit(1)
+            if request.status_code == 400:
+                print(colored("File does not exist", 'red', attrs=['bold']))
+                print("If the file exists you may be missing the path")
+                print("add 'local/' for files on the server or 'sdcard/' for files on the printer's storage")
+                exit(1)
+            if request.status_code != 204:
+                print(colored("File selection failed", 'red', attrs=['bold']))
+                exit(1)
+            else:
+                print(args[3]+" selected")
+        exit(0)
+    
+    if args[1].lower() == "print" and args[2].lower() == "pause": #print pause
+        request = requests.get(destination+"/api/job", headers=header)
+        if request.status_code == 403:
+            print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
+            exit(1)
+        data = request.json()
+
+        if data['state'] == "Operational":
+            print(colored("Printer is not printing", 'red', attrs=['bold']))
+            print("Try running '"+args[0]+" print status' for more details")
+        elif data['state'] == "Paused":
+            print(colored("Printer is already paused", 'red', attrs=['bold']))
+            exit(0)
+        elif data['state'] != "Printing":
+            print(colored("Printer cannot be reached", 'red', attrs=['bold']))
+            exit(1)
+        else:
+            request = requests.post(destination+"/api/job", headers=header, data=json.dumps({"command":"pause", "action":"pause"}))
+            if request.status_code == 409:
+                print(colored("409: Server conflict", 'red', attrs=['bold']))
+                exit(1)
+        exit(0)
+
+    if args[1].lower() == "print" and args[2].lower() == "resume": #print resume
+        request = requests.get(destination+"/api/job", headers=header)
+        if request.status_code == 403:
+            print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
+            exit(1)
+        data = request.json()
+
+        if data['state'] == "Operational":
+            print(colored("Printer is not printing", 'red', attrs=['bold']))
+            print("Try running '"+args[0]+" print status' for more details")
+            exit(1)
+        elif data['state'] == "Printing":
+            print(colored("Printer is not paused", 'red', attrs=['bold']))
+            exit(1)
+        elif data['state'] != "Paused":
+            print(colored("Printer cannot be reached", 'red', attrs=['bold']))
+            exit(1)
+        else:
+            request = requests.post(destination+"/api/job", headers=header, data=json.dumps({"command":"pause", "action":"resume"}))
+            if request.status_code == 409:
+                print(colored("409: Server conflict", 'red', attrs=['bold']))
+                exit(1)
+        exit(0)
+
+    if args[1].lower() == "print" and args[2].lower() == "cancel": #print cancel
+        request = requests.get(destination+"/api/job", headers=header)
+        if request.status_code == 403:
+            print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
+            exit(1)
+        data = request.json()
+
+        if data['state'] == "Operational":
+            print(colored("Printer is not printing", 'red', attrs=['bold']))
+            print("Try running '"+args[0]+" print status' for more details")
+        elif data['state'] != "Printing":
+            print(colored("Printer cannot be reached", 'red', attrs=['bold']))
+            exit(1)
+        else:
+            request = requests.post(destination+"/api/job", headers=header, data=json.dumps({"command":"cancel"}))
+            if request.status_code == 409:
+                print(colored("409: Server conflict", 'red', attrs=['bold']))
+                exit(1)
+        exit(0)
+
+except IndexError: #not enough arguments
+    print(colored("Not enough arguments provided", 'red', attrs=['bold']))
     exit(1)
+
+#TODO Server file listing
+#TODO Retreive file information
+#TODO Temperature status and setting
+#TODO Connect to printer
+#TODO Select file to print
+#TODO Start print
+#TODO Pause, Resume, Cancel Prints
+#TODO OctoPrint power controls
+#TODO Upload files
