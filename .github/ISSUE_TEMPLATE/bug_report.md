@@ -23,12 +23,13 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**System Information:**
+**Environment Information:**
  - OS: [e.g. iOS]
  - Version [e.g. 22]
  - Python Version: [e.g. 3.8]
  - Dependency versions
- - OctoPrint server version
+ - OctoPrint version: 
+ - 3D Printer Model: 
 
 **Additional context**
 Add any other context about the problem here.
