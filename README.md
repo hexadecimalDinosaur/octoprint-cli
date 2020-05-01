@@ -30,6 +30,10 @@ octoprint-cli print select [file]     load file to be printed
 octoprint-cli print pause             pause print
 octoprint-cli print resume            resume print if paused
 octoprint-cli print cancel            cancel current print
+octoprint-cli system shutdown         shutdown server
+octoprint-cli system reboot           reboot server
+octoprint-cli system restart          restart OctoPrint server
+octoprint-cli system restart-safe     restart OctoPrint server to safe mode
 ```
 
 
@@ -58,5 +62,4 @@ ApiKey = API_KEY_HERE
 * Retreive file information
 * Temperature status and setting
 * Connect to printer
-* OctoPrint power controls
 * Upload files
