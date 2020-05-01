@@ -33,6 +33,10 @@ def help_msg():
     print(name+" print pause             pause print")
     print(name+" print resume            resume print if paused")
     print(name+" print cancel            cancel current print")
+    print(name+" system shutdown         shutdown server")
+    print(name+" system reboot           reboot server")
+    print(name+" system restart          restart OctoPrint server")
+    print(name+" system restart-safe     restart OctoPrint server to safe mode")
     exit(0)
 
 if "-h" in args or "--help" in args:
@@ -295,6 +299,55 @@ try:
                 exit(1)
         exit(0)
 
+    if args[1].lower() == "system": #system commands
+        request = requests.get(destination+"/api/job", headers=header)
+        if request.status_code == 403:
+            print(colored("403: Authentication failed, is your API key correct?", 'red', attrs=['bold']))
+            exit(1)
+        data = request.json()
+
+        if data['state'] in ("Printing", "Pausing", "Paused"):
+            print(colored("The printer is currently printing, please cancel the operation before trying again", 'red', attrs=['bold']))
+            exit(1)
+
+        if args[2].lower() == "shutdown": #system shutdown
+            prompt = input("You are shutting down the system. Are you sure you wish to continue? [Y/n]: ")
+            if not(prompt.lower() == "y" or prompt.lower == "yes"):
+                exit(0)
+            request = requests.post(destination+"/api/system/commands/core/shutdown", headers=header)
+            if request.status_code != 204:
+                print(colored("Shutdown Failed", 'red', attrs=['bold']))
+            else:
+                print("Shutdown Initialized")
+        elif args[2].lower() == "reboot": #system reboot
+            prompt = input("You are rebooting the system. Are you sure you wish to continue? [Y/n]: ")
+            if not(prompt.lower() == "y" or prompt.lower == "yes"):
+                exit(0)
+            request = requests.post(destination+"/api/system/commands/core/reboot", headers=header)
+            if request.status_code != 204:
+                print(colored("Reboot Failed", 'red', attrs=['bold']))
+            else:
+                print("Reboot Initialized")
+        elif args[2].lower() == "restart": #system restart
+            prompt = input("You are restarting the server. Are you sure you wish to continue? [Y/n]: ")
+            if not(prompt.lower() == "y" or prompt.lower == "yes"):
+                exit(0)
+            request = requests.post(destination+"/api/system/commands/core/restart", headers=header)
+            if request.status_code != 204:
+                print(colored("Restart Failed", 'red', attrs=['bold']))
+            else:
+                print("Server is restarting")
+        elif args[2].lower() == "restart-safe": #system restart-safe
+            prompt = input("You are restarting the server into safe mode. Are you sure you wish to continue? [Y/n]: ")
+            if not(prompt.lower() == "y" or prompt.lower == "yes"):
+                exit(0)
+            request = requests.post(destination+"/api/system/commands/core/restart_safe", headers=header)
+            if request.status_code != 204:
+                print(colored("Restart Failed", 'red', attrs=['bold']))
+            else:
+                print("Server is restarting into safe mode")
+
+
 except IndexError: #not enough arguments
     print(colored("Not enough arguments provided", 'red', attrs=['bold']))
     exit(1)
@@ -303,8 +356,4 @@ except IndexError: #not enough arguments
 #TODO Retreive file information
 #TODO Temperature status and setting
 #TODO Connect to printer
-#TODO Select file to print
-#TODO Start print
-#TODO Pause, Resume, Cancel Prints
-#TODO OctoPrint power controls
 #TODO Upload files
