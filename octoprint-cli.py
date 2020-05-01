@@ -1,4 +1,7 @@
 #!/usr/bin/python3
+#Created by Quentin Fan-Chiang
+#This program is licensed under the MIT License, details at https://github.com/UserBlackBox/octoprint-cli/blob/master/LICENSE
+#Details about this program and usage at https://github.com/UserBlackBox/octoprint-cli/blob/master/README.md
 import requests
 import sys
 import configparser
@@ -17,7 +20,7 @@ else:
 
 args = sys.argv
 
-def help_msg():
+def help_msg(): #help message
     name = args[0]
     print("octoprint-cli")
     print("================================================================================")
