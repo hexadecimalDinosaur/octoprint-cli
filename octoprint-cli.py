@@ -84,6 +84,9 @@ octoprint-cli connection disconnect     connect to printer with manual settings
 octoprint-cli temp status               view printer temperature status
 octoprint-cli temp extruder [target]    set extruder target temperature
 octoprint-cli temp bed [target]         set bed target temperature
+octoprint-cli files list                list files and folders in root dir
+octoprint-cli files list [dir]          list files in directory
+octoprint-cli files info [name]         get information on file or folder
 octoprint-cli system restart            restart OctoPrint server
 octoprint-cli system restart-safe       restart OctoPrint server to safe mode
 octoprint-cli system reboot             reboot server
@@ -404,6 +407,70 @@ try:
             sys.exit(1)
         else:
             print("Server is shutting down")
+
+    elif args[1:3] == ['files', 'list']:
+        container = 'files'
+        try:
+            if args[3].startswith("/"):
+                    args[3] = args[3][1:]
+            if args[3].endswith("/"):
+                    args[3] = args[3][:-1]
+
+            data = caller.get("/api/files/local/"+args[3])
+            if data == 404:
+                print(colored("Folder does not exist", 'red', attrs=['bold']))
+                sys.exit(1)
+            print("Listing files in " + args[3])
+            container = 'children'
+        except IndexError:
+            data = caller.get("/api/files")
+        
+        longestName=0
+        longestType=0
+        for i in data[container]:
+            if len(i['name']) > longestName: longestName = len(i['name'])
+            if len(i['type']) > longestType: longestType = len(i['type'])
+        
+        print(colored("NAME", attrs=['bold']) + (" "*longestName) + colored("TYPE", attrs=['bold']) + (" "*longestType) + colored("SIZE", attrs=['bold'])) #table headings
+        longestName+=4
+        longestType+=4
+        for i in data[container]:
+            print(i['name'] + ((longestName-len(i['name']))*" ") + i['type'] + ((longestType-len(i['type']))*" "),end='')
+            try:
+                if i['type'] != 'folder': print(str(round(i['size']/1048576.0,2)) + " MB")
+                else: print()
+            except KeyError: print()
+        if container=='files': print(colored("\nFree space: ", attrs=['bold'])+str(round(data['free']/1073741824.0,3))+" GB") #disk space
+        sys.exit(0)
+
+    elif args[1:3] == ['files', 'info']:
+        if args[3].startswith("/"):
+            args[3] = args[3][1:]
+        data = caller.get("/api/files/local/"+args[3])
+        if data == 404 or data == 500:
+            print(colored("File or folder not found", 'red', attrs=['bold']))
+            sys.exit(1)
+        print(colored("Name: ", attrs=['bold'])+data['name'])
+        print(colored("Path: ", attrs=['bold'])+data['refs']['resource'].replace(destination+'/api/files/local/',''))
+        print(colored("Type: ", attrs=['bold'])+data['type'])
+        try:
+            print(colored("Size: ", attrs=['bold'])+str(round(data['size']/1048576.0,2))+" MB")
+        except KeyError:
+            pass
+        if data['type'] == 'machinecode':
+            try:
+                print(colored("Estimated Print Time: ", attrs=['bold'])+str(datetime.timedelta(seconds=data['gcodeAnalysis']['estimatedPrintTime'])).split(".")[0])
+            except KeyError:
+                pass
+            try:
+                print(colored("Successful Prints: ", attrs=['bold'])+str(data['prints']['success']))
+            except KeyError:
+                pass
+            try:
+                print(colored("Failed Prints: ", attrs=['bold'])+str(data['prints']['failure']))
+            except KeyError:
+                pass
+        sys.exit(0)
 
     else:
         print(colored("Invalid arguments", 'red', attrs=['bold']))
