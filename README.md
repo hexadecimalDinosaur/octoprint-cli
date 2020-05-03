@@ -61,6 +61,36 @@ MaxExtruderTemp = 250
 MaxBedTemp = 85
 ```
 
+## Usage
+
+```
+octoprint-cli
+===============================================================================
+command line tool to control octoprint servers
+
+COMMANDS
+octoprint-cli help                      view this help message
+octoprint-cli print status              view job status
+octoprint-cli print select [file]       load file
+octoprint-cli print start               start print
+octoprint-cli print pause               pause print
+octoprint-cli print resume              resume print
+octoprint-cli print cancel              cancel print
+octoprint-cli connection status         view connection status
+octoprint-cli connection connect        connect to printer with autodetection
+octoprint-cli connection disconnect     connect to printer with manual settings
+octoprint-cli temp status               view printer temperature status
+octoprint-cli temp extruder [target]    set extruder target temperature
+octoprint-cli temp bed [target]         set bed target temperature
+octoprint-cli files list                list files and folders in root dir
+octoprint-cli files list [dir]          list files in directory
+octoprint-cli files info [name]         get information on file or folder
+octoprint-cli system restart            restart OctoPrint server
+octoprint-cli system restart-safe       restart OctoPrint server to safe mode
+octoprint-cli system reboot             reboot server
+octoprint-cli system shutdown           shutdown server
+```
+
 ## Todo List
 
 * Upload files
