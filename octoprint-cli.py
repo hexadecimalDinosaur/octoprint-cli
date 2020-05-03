@@ -297,6 +297,63 @@ try:
             print(colored("Unable to disconnect from printer", 'red', attrs=['bold']))
             sys.exit(1)
 
+    elif args[1:3] == ['temp', 'status']:
+        data = caller.get("/api/printer")
+        if data == 409:
+            print(colored("Printer is not operational", 'red', attrs=['bold']))
+            sys.exit(1)
+        if type(data) is dict:
+            print(colored("Extruder Temp: ", attrs=['bold'])+str(data['temperature']['tool0']['actual'])+"°C")
+            print(colored("Extruder Target: ", attrs=['bold'])+str(data['temperature']['tool0']['target'])+"°C")
+            print(colored("Bed Temp: ", attrs=['bold'])+str(data['temperature']['bed']['actual'])+"°C")
+            print(colored("Bed Target: ", attrs=['bold'])+str(data['temperature']['bed']['target'])+"°C")
+        
+    elif args[1:3] == ['temp', 'extruder']:
+        if args[3] == 'off':
+            args[3] = '0'
+        if not(args[3].isdigit()):
+            print(colored("Invalid arguments", 'red', attrs=['bold']))
+            sys.exit(1)
+        try:
+            if int(args[3]) > int(config['print']['MaxExtruderTemp']):
+                print(colored("Target temp is higher than the limit set in the configuration file", 'red', attrs=['bold']))
+                sys.exit(1)
+        except KeyError:
+            pass
+        code = caller.post("/api/printer/tool", {'command':'target','targets':{'tool0':int(args[3])}})
+        if code == 204:
+            print(colored("Extruder temp set to " + args[3]+"°C", 'green', attrs=['bold']))
+            sys.exit(0)
+        elif code == 409:
+            print(colored("Printer is not operational", 'red', attrs=['bold']))
+            sys.exit(1)
+        else:
+            print(colored("Unable to change temperature", 'red', attrs=['bold']))
+            sys.exit(1)
+
+    elif args[1:3] == ['temp', 'bed']:
+        if args[3] == 'off':
+            args[3] = '0'
+        if not(args[3].isdigit()):
+            print(colored("Invalid arguments", 'red', attrs=['bold']))
+            sys.exit(1)
+        try:
+            if int(args[3]) > int(config['print']['MaxBedTemp']):
+                print(colored("Target temp is higher than the limit set in the configuration file", 'red', attrs=['bold']))
+                sys.exit(1)
+        except KeyError:
+            pass
+        code = caller.post("/api/printer/bed", {'command':'target','target':int(args[3])})
+        if code == 204:
+            print(colored("Bed temp set to " + args[3]+"°C", 'green', attrs=['bold']))
+            sys.exit(0)
+        elif code == 409:
+            print(colored("Printer is not operational", 'red', attrs=['bold']))
+            sys.exit(1)
+        else:
+            print(colored("Unable to change temperature", 'red', attrs=['bold']))
+            sys.exit(1)
+
     else:
         print(colored("Invalid arguments", 'red', attrs=['bold']))
         sys.exit(1)
