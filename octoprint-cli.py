@@ -33,7 +33,7 @@ except FileNotFoundError:
 
 color = True #termcolor configuration
 if os.name=='nt':
-    def colored(*args):
+    def colored(*args, attrs=None):
         return args[0]
     color = False
 try:
