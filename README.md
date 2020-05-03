@@ -33,43 +33,9 @@ Windows users can grab the application from [releases](https://github.com/UserBl
 
 Linux users can drop the python program in their user bin folder
 
-## Usage
-
-```
-octoprint-cli
-========================================================================================================================
-python3 command line tool for controlling OctoPrint servers
-
-COMMANDS
-octoprint-cli help                                                           view this help message
-octoprint-cli version                                                        view OctoPrint server version
-octoprint-cli print status                                                   view print status
-octoprint-cli print start                                                    start printing loaded file
-octoprint-cli print select [file]                                            load file to be printed
-octoprint-cli print pause                                                    pause print
-octoprint-cli print resume                                                   resume print if paused
-octoprint-cli print cancel                                                   cancel current print
-octoprint-cli system shutdown                                                shutdown server
-octoprint-cli system reboot                                                  reboot server
-octoprint-cli system restart                                                 restart OctoPrint server
-octoprint-cli system restart-safe                                            restart OctoPrint server to safe mode
-octoprint-cli files list                                                     list files in the root OctoPrint directory
-octoprint-cli files list [dir]                                               list files in directory
-octoprint-cli files info [file]                                              find information about file or directory
-octoprint-cli temp status                                                    find printer temperature information
-octoprint-cli temp extruder [temp]                                           set extruder temperature
-octoprint-cli temp bed [temp]                                                set bed temperature
-octoprint-cli connection status                                              view printer connection status
-octoprint-cli connection connect [port /dev/ttyACM0] [baudrate 115200]       connect to printer
-octoprint-cli connection disconnect                                          disconnect from printer
-```
-
-## Screenshots
-
-![status commands](screenshots/print-status.png)
-
 ## Dependencies
 
+Can be found in `requirements.txt`
 * termcolor
 * requests
 
