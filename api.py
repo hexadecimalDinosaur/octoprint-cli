@@ -56,4 +56,13 @@ class api:
     def getTotalTime(self):
         return self.get("/api/job")['job']['estimatedTotalTime']
 
+    def selectFile(self, fileName):
+        return self.post("/api/files/local/"+fileName, {'command':'select'})
+    
+    def printRequests(self, command):
+        return self.post("/api/job", {'command':command})
+
+    def pauseRequests(self, action):
+        return self.post("/api/job", {'command':'pause', 'action':action})
+
 
