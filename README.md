@@ -89,6 +89,7 @@ octoprint-cli system restart            restart OctoPrint server
 octoprint-cli system restart-safe       restart OctoPrint server to safe mode
 octoprint-cli system reboot             reboot server
 octoprint-cli system shutdown           shutdown server
+octoprint-cli continuous                get refreshing continuous status
 ```
 
 ## Todo List

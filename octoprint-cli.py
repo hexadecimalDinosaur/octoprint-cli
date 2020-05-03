@@ -5,6 +5,8 @@ import os
 from api import api
 import sys
 import datetime
+import time
+import math
 
 config = configparser.ConfigParser()
 configComplete = True
@@ -90,7 +92,8 @@ octoprint-cli files info [name]         get information on file or folder
 octoprint-cli system restart            restart OctoPrint server
 octoprint-cli system restart-safe       restart OctoPrint server to safe mode
 octoprint-cli system reboot             reboot server
-octoprint-cli system shutdown           shutdown server"""
+octoprint-cli system shutdown           shutdown server
+octoprint-cli continuous                get refreshing continuous status"""
 
 try:
     if args[1] == 'help':
@@ -101,6 +104,104 @@ try:
         data=caller.getVersionInfo()
         print("OctoPrint v" + data['server'] + " - API v" + data['api'])
         sys.exit(0)
+
+    if args[1] == 'continuous':
+        try:
+            while True: 
+                lines = 0
+                if not(caller.getState() in ('Operational', 'Printing', 'Paused', 'Pausing', 'Cancelling')):
+                    print(colored(caller.getState(),'red',attrs=['bold']))
+                    data = caller.get('/api/connection')
+                    print(colored("Printer Profile: ", attrs=['bold']) + data['options']['printerProfiles'][0]['name'])
+                    print(colored("Port: ", attrs=['bold']) + data['current']['port'])
+                    print(colored("Baudrate: ", attrs=['bold']) + str(data['current']['baudrate']))
+                    lines = 4
+                if caller.getState() == 'Operational':
+                    data = caller.get('/api/job')
+                    print(colored('Printer Operational', 'green', attrs=['bold']))
+                    if data['job']['file']['name']:
+                        print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
+                        print(colored("Estimated Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
+                        print()
+                        lines+=3
+                    print(colored("Temperature Status", attrs=['bold','underline']))
+                    data2 = caller.get('/api/printer')
+                    print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+                    print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
+                    print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+                    print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
+                    lines+=6
+                if caller.getState() == 'Printing':
+                    data = caller.get('/api/job')
+                    print(colored('Printing', 'green', attrs=['bold']))
+                    print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
+                    print(colored("Progress: ", attrs=['bold'])+str(round(data['progress']['completion'],2))+"%")
+                    print(colored("Estimated Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
+                    print(colored("Print Time Left: ", attrs=['bold'])+str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
+                    print()
+                    print(colored("Temperature Status", attrs=['bold','underline']))
+                    data2 = caller.get('/api/printer')
+                    print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+                    print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
+                    print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+                    print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
+                    print()
+                    print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil((100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'],2))+"% Complete")
+                    lines+=13
+                if caller.getState() == 'Paused':
+                    data = caller.get('/api/job')
+                    print(colored('Paused', 'yellow', attrs=['bold']))
+                    print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
+                    print(colored("Progress: ", attrs=['bold'])+str(round(data['progress']['completion'],2))+"%")
+                    print(colored("Estimated Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
+                    print(colored("Print Time Left: ", attrs=['bold'])+str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
+                    print()
+                    print(colored("Temperature Status", attrs=['bold','underline']))
+                    data2 = caller.get('/api/printer')
+                    print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+                    print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
+                    print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+                    print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
+                    print()
+                    print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil((100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'],2))+"% Complete")
+                    lines+=13
+                if caller.getState() == 'Pausing':
+                    data = caller.get('/api/job')
+                    print(colored('Pausing', 'yellow', attrs=['bold']))
+                    print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
+                    print(colored("Progress: ", attrs=['bold'])+str(round(data['progress']['completion'],2))+"%")
+                    print(colored("Estimated Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
+                    print(colored("Print Time Left: ", attrs=['bold'])+str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
+                    print()
+                    print(colored("Temperature Status", attrs=['bold','underline']))
+                    data2 = caller.get('/api/printer')
+                    print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+                    print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
+                    print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+                    print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
+                    print()
+                    print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil((100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'],2))+"% Complete")
+                    lines+=13
+                if caller.getState() == 'Cancelling':
+                    data = caller.get('/api/job')
+                    print(colored('Cancelling', 'red', attrs=['bold']))
+                    print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
+                    print(colored("Estimated Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
+                    print()
+                    print(colored("Temperature Status", attrs=['bold','underline']))
+                    data2 = caller.get('/api/printer')
+                    print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+                    print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
+                    print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+                    print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
+                    lines+=9
+
+                time.sleep(3)
+                for i in range(lines):
+                    sys.stdout.write("\033[F\033[K")
+        except KeyboardInterrupt:
+            print(colored("Continuous output terminated", attrs=['bold']))
+            sys.exit(0)
 
     elif args[1:3] == ['print', 'status']:
         state = caller.getState()
