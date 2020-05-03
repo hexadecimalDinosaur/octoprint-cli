@@ -83,7 +83,11 @@ octoprint-cli connection connect        connect to printer with autodetection
 octoprint-cli connection disconnect     connect to printer with manual settings
 octoprint-cli temp status               view printer temperature status
 octoprint-cli temp extruder [target]    set extruder target temperature
-octoprint-cli temp bed [target]         set bed target temperature"""
+octoprint-cli temp bed [target]         set bed target temperature
+octoprint-cli system restart            restart OctoPrint server
+octoprint-cli system restart-safe       restart OctoPrint server to safe mode
+octoprint-cli system reboot             reboot server
+octoprint-cli system shutdown           shutdown server"""
 
 try:
     if args[1] == 'help':
@@ -357,6 +361,49 @@ try:
             print(colored("Unable to change temperature", 'red', attrs=['bold']))
             sys.exit(1)
 
+    elif args[1:3] == ['system', 'restart']:
+        prompt = input(colored("You are restarting the server. Are you sure you wish to continue?",attrs=['bold'])+" [Y/n]: ")
+        if not(prompt.lower() == "y" or prompt.lower == "yes"):
+            sys.exit(0)
+        code = caller.post("/api/system/commands/core/restart",{})
+        if code != 204:
+            print(colored("Unable to restart",'red',attrs=['bold']))
+            sys.exit(1)
+        else:
+            print("OctoPrint is restarting")
+
+    elif args[1:3] == ['system', 'restart-safe']:
+        prompt = input(colored("You are restarting the server to safe mode. Are you sure you wish to continue?",attrs=['bold'])+" [Y/n]: ")
+        if not(prompt.lower() == "y" or prompt.lower == "yes"):
+            sys.exit(0)
+        code = caller.post("/api/system/commands/core/restart_safe",{})
+        if code != 204:
+            print(colored("Unable to restart",'red',attrs=['bold']))
+            sys.exit(1)
+        else:
+            print("OctoPrint is restarting to safe mode")
+
+    elif args[1:3] == ['system', 'reboot']:
+        prompt = input(colored("You are rebooting the server. Are you sure you wish to continue?",attrs=['bold'])+" [Y/n]: ")
+        if not(prompt.lower() == "y" or prompt.lower == "yes"):
+            sys.exit(0)
+        code = caller.post("/api/system/commands/core/reboot",{})
+        if code != 204:
+            print(colored("Unable to reboot",'red',attrs=['bold']))
+            sys.exit(1)
+        else:
+            print("Server is rebooting")
+
+    elif args[1:3] == ['system', 'shutdown']:
+        prompt = input(colored("You are shutting down the server. Are you sure you wish to continue?",attrs=['bold'])+" [Y/n]: ")
+        if not(prompt.lower() == "y" or prompt.lower == "yes"):
+            sys.exit(0)
+        code = caller.post("/api/system/commands/core/shutdown",{})
+        if code != 204:
+            print(colored("Unable to shutdown",'red',attrs=['bold']))
+            sys.exit(1)
+        else:
+            print("Server is shutting down")
 
     else:
         print(colored("Invalid arguments", 'red', attrs=['bold']))
