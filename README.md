@@ -20,6 +20,7 @@ This project is a work in progress. Some features may not work as intended or be
 * Retrieving file/folder information
 * Setting extruder and bed temperature
 * Connect and disconnect from printer
+* Continuous status output with temperature status and progress bar
 
 ## Limitations
 
