@@ -80,7 +80,10 @@ octoprint-cli print resume              resume print
 octoprint-cli print cancel              cancel print
 octoprint-cli connection status         view connection status
 octoprint-cli connection connect        connect to printer with autodetection
-octoprint-cli connection disconnect     connect to printer with manual settings"""
+octoprint-cli connection disconnect     connect to printer with manual settings
+octoprint-cli temp status               view printer temperature status
+octoprint-cli temp extruder [target]    set extruder target temperature
+octoprint-cli temp bed [target]         set bed target temperature"""
 
 try:
     if args[1] == 'help':
@@ -353,6 +356,7 @@ try:
         else:
             print(colored("Unable to change temperature", 'red', attrs=['bold']))
             sys.exit(1)
+
 
     else:
         print(colored("Invalid arguments", 'red', attrs=['bold']))
