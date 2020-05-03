@@ -20,6 +20,7 @@ This project is a work in progress. Some features may not work as intended or be
 * Retrieving file/folder information
 * Setting extruder and bed temperature
 * Connect and disconnect from printer
+* Continuous status output with temperature status and progress bar
 
 ## Limitations
 
@@ -89,6 +90,7 @@ octoprint-cli system restart            restart OctoPrint server
 octoprint-cli system restart-safe       restart OctoPrint server to safe mode
 octoprint-cli system reboot             reboot server
 octoprint-cli system shutdown           shutdown server
+octoprint-cli continuous                get refreshing continuous status
 ```
 
 ## Todo List
