@@ -85,6 +85,9 @@ A sample config file has been included in `sample-config.ini`
 ServerAddress = SERVER_ADDRESS_HERE
 ApiKey = API_KEY_HERE
 
+[preferences]
+;Set if the program uses colored or formatted text, this setting is turned off on windows due to cmd and powershell limitations
+FormattedText = true
 
 [printer]
 ;Set maximum temperature that printer can be set too
