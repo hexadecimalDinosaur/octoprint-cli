@@ -28,12 +28,6 @@ Currently, octoprint-cli is limited to only printers with a single extruder and 
 
 Colored and formatted text is not available on Windows systems due to the lack of support on cmd and powershell terminals
 
-## Installation
-
-Windows users can grab the application from [releases](https://github.com/UserBlackBox/octoprint-cli/releases)
-
-Linux users can drop the python program in their user bin folder
-
 ## Dependencies
 
 Can be found in `requirements.txt`
@@ -42,7 +36,7 @@ Can be found in `requirements.txt`
 
 ## Configuration
 
-The tool reads its configuration from either `config.ini` in the script directory or from `~/.config/octoprint-cli.ini`
+The tool reads its configuration from either `config.ini` in the current directory or from `~/.config/octoprint-cli.ini` on Linux systems
 
 A sample config file has been included in `sample-config.ini`
 
