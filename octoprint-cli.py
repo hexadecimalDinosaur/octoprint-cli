@@ -12,7 +12,7 @@ config = configparser.ConfigParser()
 configComplete = True
 configExists = False
 try:
-    open('config.ini')
+    open(os.path.join(sys.path[0],'config.ini'))
     config.read(os.path.join(sys.path[0],'config.ini'))
     destination = config['server']['ServerAddress']
     key = config['server']['ApiKey']
