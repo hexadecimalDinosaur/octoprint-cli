@@ -82,6 +82,7 @@ octoprint-cli temp bed [target]         set bed target temperature
 octoprint-cli files list                list files and folders in root dir
 octoprint-cli files list [dir]          list files in directory
 octoprint-cli files info [name]         get information on file or folder
+octoprint-cli files upload [file]       upload file to OctoPrint server storage
 octoprint-cli system restart            restart OctoPrint server
 octoprint-cli system restart-safe       restart OctoPrint server to safe mode
 octoprint-cli system reboot             reboot server
