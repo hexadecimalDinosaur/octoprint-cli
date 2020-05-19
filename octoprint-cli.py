@@ -83,6 +83,7 @@ octoprint-cli temp bed [target]         set bed target temperature
 octoprint-cli files list                list files and folders in root dir
 octoprint-cli files list [dir]          list files in directory
 octoprint-cli files info [name]         get information on file or folder
+octoprint-cli files upload [file]       upload file to OctoPrint server storage
 octoprint-cli system restart            restart OctoPrint server
 octoprint-cli system restart-safe       restart OctoPrint server to safe mode
 octoprint-cli system reboot             reboot server
@@ -576,6 +577,26 @@ try:
             except KeyError:
                 pass
         sys.exit(0)
+
+    elif args[1:3] == ['files', 'upload']:
+        if not os.path.exists(args[3]):
+            print(colored("File not found", 'red', attrs=['bold']))
+            sys.exit(1)
+        path=""
+        data = caller.fileUpload(args[3])
+        
+        if data==415:
+            print(colored("Invalid file type", 'red', attrs=['bold']))
+            sys.exit(1)
+        if data==409:
+            print(colored("File upload is in conflict with server state", 'red', attrs=['bold']))
+            sys.exit(1)
+        if type(data) is dict:
+            print(colored("File uploaded to OctoPrint", 'green', attrs=['bold']))
+            sys.exit(0)
+        else:
+            print(colored("Unable to upload file", 'red', attrs=['bold']))
+            sys.exit(0)
 
     else:
         print(colored("Invalid arguments", 'red', attrs=['bold']))
