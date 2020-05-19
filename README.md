@@ -28,6 +28,8 @@ Currently, octoprint-cli is limited to only printers with a single extruder and 
 
 Colored and formatted text is not available on Windows systems due to the lack of support on cmd and powershell terminals
 
+The program requires the API key to have all permissions to run
+
 ## Dependencies
 
 Can be found in `requirements.txt`
