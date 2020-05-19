@@ -11,25 +11,19 @@ import math
 config = configparser.ConfigParser()
 configComplete = True
 configExists = False
-try:
-    open(os.path.join(sys.path[0],'config.ini'))
+if os.path.exists(f"{os.path.dirname(__file__)}{os.sep}config.ini"):
     config.read(os.path.join(sys.path[0],'config.ini'))
-    destination = config['server']['ServerAddress']
-    key = config['server']['ApiKey']
     configExists = True
+else:
+    if os.path.exists(expanduser('~/.config/octoprint-cli.ini')):
+        config.read(expanduser('~/.config/octoprint-cli.ini'))
+        configExists = True
+
+try:
+    key = config['server']['ApiKey']
+    destination = config['server']['ServerAddress']
 except KeyError:
     configComplete = False
-except FileNotFoundError:
-    try:
-        open(expanduser('~/.config/octoprint-cli.ini'))
-        config.read(expanduser('~/.config/octoprint-cli.ini'))
-        destination = config['server']['ServerAddress']
-        key = config['server']['ApiKey']
-        configExists = True
-    except KeyError:
-        configComplete = False
-    except FileNotFoundError:
-        pass
 
 color = True #termcolor configuration
 if os.name=='nt':
@@ -121,7 +115,7 @@ try:
                     print(colored('Printer Operational', 'green', attrs=['bold']))
                     if data['job']['file']['name']:
                         print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
-                        print(colored("Estimated Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
+                        print(colored("Estimated Print Time: ", attrs=['bold']) + caller.getTotalTime())
                         print()
                         lines+=3
                     print(colored("Temperature Status", attrs=['bold','underline']))
@@ -136,8 +130,8 @@ try:
                     print(colored('Printing', 'green', attrs=['bold']))
                     print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
                     print(colored("Progress: ", attrs=['bold'])+str(round(data['progress']['completion'],2))+"%")
-                    print(colored("Estimated Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
-                    print(colored("Print Time Left: ", attrs=['bold'])+str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
+                    print(colored("Estimated Print Time: ", attrs=['bold']) + caller.getTotalTime())
+                    print(colored("Print Time Left: ", attrs=['bold'])+caller.getTimeLeft())
                     print()
                     print(colored("Temperature Status", attrs=['bold','underline']))
                     data2 = caller.get('/api/printer')
@@ -153,8 +147,8 @@ try:
                     print(colored('Paused', 'yellow', attrs=['bold']))
                     print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
                     print(colored("Progress: ", attrs=['bold'])+str(round(data['progress']['completion'],2))+"%")
-                    print(colored("Estimated Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
-                    print(colored("Print Time Left: ", attrs=['bold'])+str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
+                    print(colored("Estimated Print Time: ", attrs=['bold']) + caller.getTotalTime())
+                    print(colored("Print Time Left: ", attrs=['bold'])+caller.getTimeLeft())
                     print()
                     print(colored("Temperature Status", attrs=['bold','underline']))
                     data2 = caller.get('/api/printer')
@@ -170,8 +164,8 @@ try:
                     print(colored('Pausing', 'yellow', attrs=['bold']))
                     print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
                     print(colored("Progress: ", attrs=['bold'])+str(round(data['progress']['completion'],2))+"%")
-                    print(colored("Estimated Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
-                    print(colored("Print Time Left: ", attrs=['bold'])+str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
+                    print(colored("Estimated Print Time: ", attrs=['bold']) + caller.getTotalTime())
+                    print(colored("Print Time Left: ", attrs=['bold'])+caller.getTimeLeft())
                     print()
                     print(colored("Temperature Status", attrs=['bold','underline']))
                     data2 = caller.get('/api/printer')
@@ -186,7 +180,7 @@ try:
                     data = caller.get('/api/job')
                     print(colored('Cancelling', 'red', attrs=['bold']))
                     print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
-                    print(colored("Estimated Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
+                    print(colored("Estimated Print Time: ", attrs=['bold']) + caller.getTotalTime())
                     print()
                     print(colored("Temperature Status", attrs=['bold','underline']))
                     data2 = caller.get('/api/printer')
@@ -222,7 +216,7 @@ try:
             if state == 'Operational' and selectedFile:
                 print(colored("Printer Operational", 'green', attrs=['bold']))
                 print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
-                print(colored("Estimated Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
+                print(colored("Estimated Print Time: ", attrs=['bold']) + caller.getTotalTime())
                 print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
                 print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
                 print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
@@ -236,8 +230,8 @@ try:
             elif state == 'Printing':
                 print(colored("Printing", 'green', attrs=['bold']))
                 print(colored("File: ", attrs=['bold']) + data['job']['file']['name'])
-                print(colored("Estimated Total Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
-                print(colored("Estimated Print Time Left: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
+                print(colored("Estimated Total Print Time: ", attrs=['bold']) + caller.getTotalTime())
+                print(colored("Estimated Print Time Left: ", attrs=['bold']) + caller.getTimeLeft())
                 print(colored("Progress: ", attrs=['bold']) + str(round(data['progress']['completion']))+"%")
                 print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
                 print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
@@ -246,8 +240,8 @@ try:
             elif state == 'Paused':
                 print(colored("Paused", 'yellow', attrs=['bold']))
                 print(colored("File: ", attrs=['bold']) + data['job']['file']['name'])
-                print(colored("Estimated Total Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
-                print(colored("Estimated Print Time Left: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
+                print(colored("Estimated Total Print Time: ", attrs=['bold']) + caller.getTotalTime())
+                print(colored("Estimated Print Time Left: ", attrs=['bold']) + caller.getTimeLeft())
                 print(colored("Progress: ", attrs=['bold']) + str(round(data['progress']['completion']))+"%")
                 print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
                 print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
@@ -256,8 +250,8 @@ try:
             elif state == 'Pausing':
                 print(colored("Pausing", 'yellow', attrs=['bold']))
                 print(colored("File: ", attrs=['bold']) + data['job']['file']['name'])
-                print(colored("Estimated Total Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
-                print(colored("Estimated Print Time Left: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
+                print(colored("Estimated Total Print Time: ", attrs=['bold']) + caller.getTotalTime())
+                print(colored("Estimated Print Time Left: ", attrs=['bold']) + caller.getTimeLeft())
                 print(colored("Progress: ", attrs=['bold']) + str(round(data['progress']['completion']))+"%")
                 print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
                 print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
@@ -266,6 +260,16 @@ try:
             elif state == 'Cancelling':
                 print(colored("Cancelling", 'red', attrs=['bold']))
                 print(colored("File: ", attrs=['bold']) + data['job']['file']['name'])
+                print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+                print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
+                print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+                print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
+            elif state == 'Finishing':
+                print(colored("Finishing", 'green', attrs=['bold']))
+                print(colored("File: ", attrs=['bold']) + data['job']['file']['name'])
+                print(colored("Estimated Total Print Time: ", attrs=['bold']) + caller.getTotalTime())
+                print(colored("Estimated Print Time Left: ", attrs=['bold']) + caller.getTimeLeft())
+                print(colored("Progress: ", attrs=['bold']) + str(round(data['progress']['completion']))+"%")
                 print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
                 print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
                 print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")

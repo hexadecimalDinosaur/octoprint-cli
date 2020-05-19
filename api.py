@@ -51,10 +51,31 @@ class api:
         return self.get("/api/job")['progress']['completion']
 
     def getTimeLeft(self):
-        return self.get("/api/job")['progress']['printTimeLeft']
+        time = self.get("/api/job")['progress']['printTimeLeft']
+        hours = int(time//3600)
+        if len(str(hours))==1:
+            hours = "0"+str(hours)
+        time = time%3600
+        minutes = int(time//60)
+        time = int(time%60)
+        if len(str(minutes))==1:
+            minutes = "0"+str(minutes)
+        time = int(time%60)
+        if len(str(time))==1:
+            time = "0"+str(time)
+        return str(hours)+":"+str(minutes)+":"+str(time)
     
     def getTotalTime(self):
-        return self.get("/api/job")['job']['estimatedTotalTime']
+        time = self.get("/api/job")['job']['estimatedPrintTime']
+        hours = int(time//3600)
+        if len(str(hours))==1:
+            hours = "0"+str(hours)
+        time = time%3600
+        minutes = int(time//60)
+        time = int(time%60)
+        if len(str(minutes))==1:
+            minutes = "0"+str(minutes)
+        return str(hours)+":"+str(minutes)
 
     def selectFile(self, fileName):
         return self.post("/api/files/local/"+fileName, {'command':'select'})
