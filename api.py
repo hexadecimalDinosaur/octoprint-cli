@@ -6,7 +6,7 @@ import json
 class api:
     address = ""
     XapiKey = ""
-    header = {'Content-Type': 'application/json'}
+    header = {}
 
     def __init__(self, key, destination):
         self.address = destination
@@ -86,4 +86,9 @@ class api:
     def pauseRequests(self, action):
         return self.post("/api/job", {'command':'pause', 'action':action})
 
-
+    def fileUpload(self, file):
+        fle = {'file':open(file,'rb'), 'filename':file}
+        request = requests.post(self.address+"/api/files/local", headers=self.header, files=fle)
+        if request.status_code == 201:
+            return request.json()
+        return request.status_code
