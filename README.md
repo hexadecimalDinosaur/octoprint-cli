@@ -1,5 +1,7 @@
 # octoprint-cli
 
+[![version](https://img.shields.io/badge/dynamic/json?color=blue&label=version&query=tag_name&url=https%3A%2F%2Fapi.github.com%2Frepos%2Fuserblackbox%2Foctoprint-cli%2Freleases%2Flatest)](https://github.com/UserBlackBox/octoprint-cli/releases/latest)
+
 ![icon](icon/icon.png)
 
 python3 command line tool for controlling OctoPrint servers
