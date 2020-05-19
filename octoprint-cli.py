@@ -108,7 +108,10 @@ try:
                     print(colored(caller.getState(),'red',attrs=['bold']))
                     data = caller.get('/api/connection')
                     print(colored("Printer Profile: ", attrs=['bold']) + data['options']['printerProfiles'][0]['name'])
-                    print(colored("Port: ", attrs=['bold']) + data['current']['port'])
+                    if data['current']['port'] != None:
+                        print(colored("Ports: ", attrs=['bold']) + data['current']['port'])
+                    else:
+                        print(colored("Ports: ", attrs=['bold'])+"None")
                     print(colored("Baudrate: ", attrs=['bold']) + str(data['current']['baudrate']))
                     lines = 4
                 if caller.getState() == 'Operational':

@@ -21,6 +21,7 @@ This project is a work in progress. Some features may not work as intended or be
 * Setting extruder and bed temperature
 * Connect and disconnect from printer
 * Continuous status output with temperature status and progress bar
+* File uploads
 
 ## Limitations
 
@@ -90,6 +91,5 @@ octoprint-cli system shutdown           shutdown server
 octoprint-cli continuous                get refreshing continuous status
 ```
 
-## Todo List
-
-* Upload files
+## Completions
+A zsh completion file can be found in `_octoprint-cli`
