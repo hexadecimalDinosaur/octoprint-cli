@@ -88,19 +88,20 @@ octoprint-cli system restart            restart OctoPrint server
 octoprint-cli system restart-safe       restart OctoPrint server to safe mode
 octoprint-cli system reboot             reboot server
 octoprint-cli system shutdown           shutdown server
-octoprint-cli continuous                get refreshing continuous status"""
+octoprint-cli continuous                get refreshing continuous status
+octoprint-cli layers                    view DisplayLayerProgress information"""
 
 try:
     if args[1] == 'help':
         print(helpMsg)
         sys.exit(0)
 
-    if args[1] == 'version':
+    elif args[1] == 'version':
         data=caller.getVersionInfo()
         print("OctoPrint v" + data['server'] + " - API v" + data['api'])
         sys.exit(0)
 
-    if args[1] == 'continuous':
+    elif args[1] == 'continuous':
         try:
             while True: 
                 lines = 0
@@ -144,6 +145,14 @@ try:
                     print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
                     print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
                     print()
+                    data=caller.get("/plugin/DisplayLayerProgress/values")
+                    if type(data) is dict:
+                        print(colored("Layer Information", 'white', attrs=['bold']))
+                        print(colored("Current Layer: ", 'white', attrs=['bold'])+data['layer']['current']+"/"+data['layer']['total'])
+                        print(colored("Current Height: ", 'white', attrs=['bold'])+data['height']['current']+'/'+data['height']['totalFormatted']+'mm')
+                        print()
+                        lines+=4
+                    data = caller.get('/api/job')
                     print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil((100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'],2))+"% Complete")
                     lines+=13
                 if caller.getState() == 'Paused':
@@ -161,6 +170,14 @@ try:
                     print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
                     print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
                     print()
+                    data=caller.get("/plugin/DisplayLayerProgress/values")
+                    if type(data) is dict:
+                        print(colored("Layer Information", 'white', attrs=['bold']))
+                        print(colored("Current Layer: ", 'white', attrs=['bold'])+data['layer']['current']+"/"+data['layer']['total'])
+                        print(colored("Current Height: ", 'white', attrs=['bold'])+data['height']['current']+'/'+data['height']['totalFormatted']+'mm')
+                        print()
+                        lines+=4
+                    data = caller.get('/api/job')
                     print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil((100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'],2))+"% Complete")
                     lines+=13
                 if caller.getState() == 'Pausing':
@@ -178,6 +195,14 @@ try:
                     print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
                     print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
                     print()
+                    data=caller.get("/plugin/DisplayLayerProgress/values")
+                    if type(data) is dict:
+                        print(colored("Layer Information", 'white', attrs=['bold']))
+                        print(colored("Current Layer: ", 'white', attrs=['bold'])+data['layer']['current']+"/"+data['layer']['total'])
+                        print(colored("Current Height: ", 'white', attrs=['bold'])+data['height']['current']+'/'+data['height']['totalFormatted']+'mm')
+                        print()
+                        lines+=4
+                    data = caller.get('/api/job')
                     print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil((100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'],2))+"% Complete")
                     lines+=13
                 if caller.getState() == 'Cancelling':
@@ -196,10 +221,25 @@ try:
 
                 time.sleep(3)
                 for i in range(lines):
-                    sys.stdout.write("\033[F\033[K")
+                    sys.stdout.write("\033[K\033[F\033[K")
         except KeyboardInterrupt:
             print(colored("Continuous output terminated", attrs=['bold']))
             sys.exit(0)
+
+    elif args[1] == 'layers':
+        data=caller.get("/plugin/DisplayLayerProgress/values")
+        if data==404:
+            print(colored("The DisplayLayerProgress is not installed or enabled on the OctoPrint server", 'red', attrs=['bold']))
+            sys.exit(1)
+        elif type(data) is dict and caller.getState() in ('Printing', 'Paused', 'Pausing', 'Finishing'):
+            print(colored("Current Layer: ", 'white', attrs=['bold'])+data['layer']['current']+"/"+data['layer']['total'])
+            print(colored("Current Height: ", 'white', attrs=['bold'])+data['height']['current']+'/'+data['height']['totalFormatted']+'mm')
+            print(colored("Average Layer Duration: ", 'white', attrs=['bold'])+data['layer']['averageLayerDuration'].replace('h','').replace('s','').replace('m',''))
+            print(colored("Last Layer Duration: ", 'white', attrs=['bold'])+data['layer']['lastLayerDuration'].replace('h','').replace('s','').replace('m',''))
+            sys.exit(0)
+        else:
+            print(colored('Unable to retreive layer information', 'red', attrs=['bold']))
+            sys.exit(1)
 
     elif args[1:3] == ['print', 'status']:
         state = caller.getState()
