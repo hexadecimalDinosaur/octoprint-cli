@@ -57,7 +57,7 @@ ApiKey = API_KEY_HERE
 FormattedText = true
 
 [printer]
-;Set maximum temperature that printer can be set too
+;Set maximum temperature that printer can be running at
 MaxExtruderTemp = 250
 MaxBedTemp = 85
 ```
