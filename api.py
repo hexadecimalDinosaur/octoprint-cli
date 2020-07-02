@@ -20,7 +20,7 @@ class api:
         return request.json()
     
     def post(self, target, data):
-        request = requests.post(self.address+target, headers=self.header, data=json.dumps(data))
+        request = requests.post(self.address+target, headers=self.header, json=(data))
         return request.status_code
 
     def connectionTest(self):
