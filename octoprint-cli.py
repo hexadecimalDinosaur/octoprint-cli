@@ -105,7 +105,7 @@ try:
         try:
             while True: 
                 lines = 0
-                if not(caller.getState() in ('Operational', 'Printing', 'Paused', 'Pausing', 'Cancelling')):
+                if not(caller.getState() in ('Operational', 'Printing', 'Paused', 'Pausing', 'Cancelling', 'Offline')):
                     print(colored(caller.getState(),'red',attrs=['bold']))
                     data = caller.get('/api/connection')
                     print(colored("Printer Profile: ", attrs=['bold']) + data['options']['printerProfiles'][0]['name'])
@@ -218,7 +218,12 @@ try:
                     print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
                     print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
                     lines+=9
-
+                if caller.getState().startswith('Offline'):
+                    print(colored('Offline','red',attrs=['bold']))
+                    data = caller.get('/api/connection')
+                    print(colored("Ports: ", attrs=['bold'])+",".join(data['options']['ports']))
+                    print(colored("Baudrates: ", attrs=['bold'])+", ".join(list(map(str,data['options']['baudrates']))))
+                    lines = 3
                 time.sleep(3)
                 for i in range(lines):
                     sys.stdout.write("\033[K\033[F\033[K")
@@ -407,7 +412,7 @@ try:
             print(colored("Baudrates: ", attrs=['bold'])+", ".join(list(map(str,data['options']['baudrates']))))
 
     elif args[1:3] == ['connection', 'connect']:
-        data = {'command':'connect'}
+        data = {'command':'connect', 'Content-Type':'application/json'}
         port = ''
         baudrate = 0
         try:
