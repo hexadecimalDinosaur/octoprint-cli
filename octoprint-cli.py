@@ -147,7 +147,7 @@ try:
                     print()
                     data=caller.get("/plugin/DisplayLayerProgress/values")
                     if type(data) is dict:
-                        print(colored("Layer Information", 'white', attrs=['bold']))
+                        print(colored("Layer Information", 'white', attrs=['bold', 'underline']))
                         print(colored("Current Layer: ", 'white', attrs=['bold'])+data['layer']['current']+"/"+data['layer']['total'])
                         print(colored("Current Height: ", 'white', attrs=['bold'])+data['height']['current']+'/'+data['height']['totalFormatted']+'mm')
                         print()
