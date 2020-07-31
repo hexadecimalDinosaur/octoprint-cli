@@ -4,27 +4,28 @@
 
 ![icon](icon/icon.png)
 
-python3 command line tool for controlling OctoPrint servers
+Python 3 command line tool for controlling OctoPrint servers
 
 This tool uses the OctoPrint API to control and view the status of 3D printers connected to OctoPrint servers
 
-This project is a work in progress. Some features may not work as intended or be missing. If you have suggestions or find bugs, please report them in issues.
+This project is a work in progress. Some features may not work as intended or be missing. If you have suggestions or find bugs, please report them in [issues](https://github.com/UserBlackBox/octoprint-cli/issues).
 
 ## Features
+These are the features that have been implemented so far, more functions will be implemented in the future. Current progress on features can be found on the [project board](https://github.com/UserBlackBox/octoprint-cli/projects/1).
 
-* Connection status
-* Print status
-* Select file for print
+* Printer connection status
+* Print job status
+* File selection
 * Pause, resume, cancel prints
 * Start print
 * System commands (shutdown, reboot, restart)
-* Listing files
+* Listing files/folders
 * Retrieving file/folder information
 * Setting extruder and bed temperature
 * Connect and disconnect from printer
 * Continuous status output with temperature status and progress bar
-* File uploads
-* Layer information from OctoPrint-DisplayLayerProgress plugin
+* GCODE file uploads to server storage
+* Layer information from OctoPrint-DisplayLayerProgress plugin if installed on server
 
 ## Limitations
 
@@ -57,7 +58,7 @@ ApiKey = API_KEY_HERE
 FormattedText = true
 
 [printer]
-;Set maximum temperature that printer can be running at
+;Set maximum temperature that printer can be set to
 MaxExtruderTemp = 250
 MaxBedTemp = 85
 ```
@@ -79,7 +80,7 @@ octoprint-cli print resume              resume print
 octoprint-cli print cancel              cancel print
 octoprint-cli connection status         view connection status
 octoprint-cli connection connect        connect to printer with autodetection
-octoprint-cli connection disconnect     connect to printer with manual settings
+octoprint-cli connection disconnect     disconnect from printer
 octoprint-cli temp status               view printer temperature status
 octoprint-cli temp extruder [target]    set extruder target temperature
 octoprint-cli temp bed [target]         set bed target temperature
