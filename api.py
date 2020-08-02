@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # class to make the requests
 import requests
-import json
 
 class api:
     address = ""
@@ -25,7 +24,7 @@ class api:
 
     def connectionTest(self):
         try:
-            if type(self.get("/api/version")) is dict:
+            if type(self.get("/api/version")) == dict:
                 return True
             else:
                 return False
@@ -33,7 +32,7 @@ class api:
             return False
     
     def authTest(self):
-        if type(self.get("/api/job")) is dict:
+        if type(self.get("/api/job")) == dict:
             return True
         else:
             return False
