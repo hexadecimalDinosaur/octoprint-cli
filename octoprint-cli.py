@@ -581,14 +581,28 @@ try:
         
         longestName=0
         longestType=0
+        folders = []
+        files = []
         for i in data[container]:
             if len(i['name']) > longestName: longestName = len(i['name'])
             if len(i['type']) > longestType: longestType = len(i['type'])
+            if i['type'] == 'folder':
+                folders.append(i)
+            else:
+                files.append(i)
         
         print(colored("NAME", attrs=['bold']) + (" "*longestName) + colored("TYPE", attrs=['bold']) + (" "*longestType) + colored("SIZE", attrs=['bold'])) #table headings
         longestName+=4
         longestType+=4
-        for i in data[container]:
+        folders.sort(key=lambda e : e['name'])
+        files.sort(key=lambda e : e['name'])
+        for i in folders:
+            print(i['name'] + ((longestName-len(i['name']))*" ") + i['type'] + ((longestType-len(i['type']))*" "),end='')
+            try:
+                if i['type'] != 'folder': print(str(round(i['size']/1048576.0,2)) + " MB")
+                else: print()
+            except KeyError: print()
+        for i in files:
             print(i['name'] + ((longestName-len(i['name']))*" ") + i['type'] + ((longestType-len(i['type']))*" "),end='')
             try:
                 if i['type'] != 'folder': print(str(round(i['size']/1048576.0,2)) + " MB")
