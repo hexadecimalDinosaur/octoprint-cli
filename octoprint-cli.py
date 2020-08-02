@@ -103,7 +103,7 @@ try:
 
     elif args[1] == 'continuous':
         try:
-            while True: 
+            while True:
                 lines = 0
                 if not(caller.getState() in ('Operational', 'Printing', 'Paused', 'Pausing', 'Cancelling', 'Offline')):
                     print(colored(caller.getState(),'red',attrs=['bold']))
@@ -146,7 +146,7 @@ try:
                     print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
                     print()
                     data=caller.get("/plugin/DisplayLayerProgress/values")
-                    if type(data) is dict:
+                    if isinstance(data, dict):
                         print(colored("Layer Information", 'white', attrs=['bold', 'underline']))
                         print(colored("Current Layer: ", 'white', attrs=['bold'])+data['layer']['current']+"/"+data['layer']['total'])
                         print(colored("Current Height: ", 'white', attrs=['bold'])+data['height']['current']+'/'+data['height']['totalFormatted']+'mm')
@@ -171,7 +171,7 @@ try:
                     print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
                     print()
                     data=caller.get("/plugin/DisplayLayerProgress/values")
-                    if type(data) is dict:
+                    if isinstance(data, dict):
                         print(colored("Layer Information", 'white', attrs=['bold']))
                         print(colored("Current Layer: ", 'white', attrs=['bold'])+data['layer']['current']+"/"+data['layer']['total'])
                         print(colored("Current Height: ", 'white', attrs=['bold'])+data['height']['current']+'/'+data['height']['totalFormatted']+'mm')
@@ -247,8 +247,7 @@ try:
             sys.exit(1)
 
     elif args[1:3] == ['print', 'status']:
-        state = caller.getState()
-        
+        state = caller.getState()        
         if state == 'Offline': #printer disconnected
             print(colored("Printer Disconnected", 'red', attrs=['bold']))
         elif state.startswith('Offline'): #Offline status with error message following
