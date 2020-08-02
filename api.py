@@ -24,7 +24,7 @@ class api:
 
     def connectionTest(self):
         try:
-            if type(self.get("/api/version")) == dict:
+            if isinstance(self.get("/api/version"),dict):
                 return True
             else:
                 return False
@@ -32,7 +32,7 @@ class api:
             return False
     
     def authTest(self):
-        if type(self.get("/api/job")) == dict:
+        if isinstance(self.get("/api/job"),dict):
             return True
         else:
             return False
