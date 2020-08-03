@@ -1,6 +1,6 @@
 # octoprint-cli
 
-[![version](https://img.shields.io/badge/dynamic/json?color=blue&label=version&query=tag_name&url=https%3A%2F%2Fapi.github.com%2Frepos%2Fuserblackbox%2Foctoprint-cli%2Freleases%2Flatest&style=flat-square)](https://github.com/UserBlackBox/octoprint-cli/releases/latest) [![license](https://img.shields.io/static/v1?label=license&message=CC%20BY--NC--SA%204.0&color=green&style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0)
+[![version](https://img.shields.io/badge/dynamic/json?color=blue&label=version&query=tag_name&url=https%3A%2F%2Fapi.github.com%2Frepos%2Fuserblackbox%2Foctoprint-cli%2Freleases%2Flatest&style=flat-square)](https://github.com/UserBlackBox/octoprint-cli/releases/latest) [![license](https://img.shields.io/static/v1?label=license&message=CC%20BY-NC-SA%204.0&color=green&style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0)
 
 ![icon](icon/icon.png)
 
