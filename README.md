@@ -8,7 +8,7 @@ Python 3 command line tool for controlling OctoPrint servers
 
 This tool uses the OctoPrint API to control and view the status of 3D printers connected to OctoPrint servers
 
-This project is a work in progress. Some features may not work as intended or be missing. If you have suggestions or find bugs, please report them in [issues](https://github.com/UserBlackBox/octoprint-cli/issues).
+This project is a work in progress. Some features may not work as intended or be missing. If you have suggestions or find bugs, please report them in [issues](https://github.com/UserBlackBox/octoprint-cli/issues). Feel free to fork this repo to fix issues or to implement new features.
 
 ## Features
 These are the features that have been implemented so far, more functions will be implemented in the future. Current progress on features can be found on the [project board](https://github.com/UserBlackBox/octoprint-cli/projects/1).
@@ -29,7 +29,7 @@ These are the features that have been implemented so far, more functions will be
 
 ## Limitations
 
-Currently, octoprint-cli is limited to only printers with a single extruder and bed. Support for additional extruders and chambers may be implemented in the future. This program has been tested on OctoPi 0.17.0 on the Raspberry Pi 4 running OctoPrint 1.4.0 with a Monoprice Select Mini V2.
+Currently, octoprint-cli is limited to only printers with a single extruder and heated bed. Support for additional extruders and heated chambers may be implemented in the future. This program has been tested on OctoPi 0.17.0 on the Raspberry Pi 4 running OctoPrint 1.4.1 with a Monoprice Select Mini V2.
 
 Colored and formatted text is not available on Windows systems due to the lack of support on cmd and powershell terminals
 
@@ -37,7 +37,7 @@ The program requires the API key to have all permissions to run
 
 ## Dependencies
 
-Can be found in `requirements.txt`
+Can be found in `requirements.txt` and installed with `pip`
 * termcolor
 * requests
 
@@ -97,4 +97,4 @@ octoprint-cli layers                    view DisplayLayerProgress information
 ```
 
 ## Completions
-A zsh completion file can be found in `_octoprint-cli`
+A zsh completion file can be found in `_octoprint-cli`. This completion file will be updated as new features are added to the program
