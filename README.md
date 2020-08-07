@@ -1,6 +1,6 @@
 # octoprint-cli
 
-[![version](https://img.shields.io/badge/dynamic/json?color=blue&label=version&query=tag_name&url=https%3A%2F%2Fapi.github.com%2Frepos%2Fuserblackbox%2Foctoprint-cli%2Freleases%2Flatest&style=flat-square)](https://github.com/UserBlackBox/octoprint-cli/releases/latest)
+[![version](https://img.shields.io/badge/dynamic/json?color=blue&label=version&query=tag_name&url=https%3A%2F%2Fapi.github.com%2Frepos%2Fuserblackbox%2Foctoprint-cli%2Freleases%2Flatest&style=flat-square)](https://github.com/UserBlackBox/octoprint-cli/releases/latest) [![license](https://img.shields.io/badge/dynamic/json?color=brightgreen&label=license&query=license.key&url=https%3A%2F%2Fapi.github.com%2Frepos%2FUserBlackBox%2Foctoprint-cli)](https://github.com/UserBlackBox/octoprint-cli/blob/master/LICENSE)
 
 ![icon](icon/icon.png)
 
@@ -24,7 +24,7 @@ These are the features that have been implemented so far, more functions will be
 * Setting extruder and bed temperature
 * Connect and disconnect from printer
 * Continuous status output with temperature status and progress bar
-* GCODE file uploads to server storage
+* GCODE and STL file uploads to server storage
 * Layer information from OctoPrint-DisplayLayerProgress plugin if installed on server
 
 ## Limitations
@@ -43,7 +43,7 @@ Can be found in `requirements.txt` and installed with `pip`
 
 ## Configuration
 
-The tool reads its configuration from either `config.ini` in the current directory or from `~/.config/octoprint-cli.ini` on Linux systems
+The tool reads its configuration from either `config.ini` in the application directory or from `~/.config/octoprint-cli.ini` on Linux systems
 
 A sample config file has been included in `sample-config.ini`
 
