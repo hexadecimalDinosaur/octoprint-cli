@@ -89,6 +89,7 @@ octoprint-cli system restart-safe       restart OctoPrint server to safe mode
 octoprint-cli system reboot             reboot server
 octoprint-cli system shutdown           shutdown server
 octoprint-cli continuous                get refreshing continuous status
+octoprint-cli gcode "[command]"         run gcode on printer
 octoprint-cli layers                    view DisplayLayerProgress information"""
 
 try:
@@ -245,6 +246,14 @@ try:
         else:
             print(colored('Unable to retreive layer information', 'red', attrs=['bold']))
             sys.exit(1)
+
+    elif args[1] == 'gcode':
+        command = args[2]
+        request = caller.post('/api/printer/command', {'command':command})
+        if request != 204:
+            print(colored('G-code execution failed', 'red', attrs=['bold']))
+            sys.exit(1)
+        sys.exit(0)
 
     elif args[1:3] == ['print', 'status']:
         state = caller.getState()        
