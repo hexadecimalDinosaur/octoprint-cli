@@ -25,6 +25,7 @@ These are the features that have been implemented so far, more functions will be
 * Connect and disconnect from printer
 * Continuous status output with temperature status and progress bar
 * GCODE and STL file uploads to server storage
+* Run G-code on printer from terminal
 * Layer information from OctoPrint-DisplayLayerProgress plugin if installed on server
 
 ## Limitations
@@ -93,6 +94,7 @@ octoprint-cli system restart-safe       restart OctoPrint server to safe mode
 octoprint-cli system reboot             reboot server
 octoprint-cli system shutdown           shutdown server
 octoprint-cli continuous                get refreshing continuous status
+octoprint-cli gcode "[command]"         run gcode on printer
 octoprint-cli layers                    view DisplayLayerProgress information
 ```
 
