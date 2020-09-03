@@ -197,7 +197,7 @@ try:
                     print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
                     print()
                     data=caller.get("/plugin/DisplayLayerProgress/values")
-                    if type(data) is dict:
+                    if type(data) == dict:
                         print(colored("Layer Information", 'white', attrs=['bold']))
                         print(colored("Current Layer: ", 'white', attrs=['bold'])+data['layer']['current']+"/"+data['layer']['total'])
                         print(colored("Current Height: ", 'white', attrs=['bold'])+data['height']['current']+'/'+data['height']['totalFormatted']+'mm')
@@ -237,7 +237,7 @@ try:
         if data==404:
             print(colored("The DisplayLayerProgress is not installed or enabled on the OctoPrint server", 'red', attrs=['bold']))
             sys.exit(1)
-        elif type(data) is dict and caller.getState() in ('Printing', 'Paused', 'Pausing', 'Finishing'):
+        elif type(data) == dict and caller.getState() in ('Printing', 'Paused', 'Pausing', 'Finishing'):
             print(colored("Current Layer: ", 'white', attrs=['bold'])+data['layer']['current']+"/"+data['layer']['total'])
             print(colored("Current Height: ", 'white', attrs=['bold'])+data['height']['current']+'/'+data['height']['totalFormatted']+'mm')
             print(colored("Average Layer Duration: ", 'white', attrs=['bold'])+data['layer']['averageLayerDuration'].replace('h','').replace('s','').replace('m',''))
@@ -256,7 +256,7 @@ try:
         sys.exit(0)
 
     elif args[1:3] == ['print', 'status']:
-        state = caller.getState()        
+        state = caller.getState()  
         if state == 'Offline': #printer disconnected
             print(colored("Printer Disconnected", 'red', attrs=['bold']))
         elif state.startswith('Offline'): #Offline status with error message following
@@ -269,7 +269,6 @@ try:
             selectedFile = caller.getFile()
             data = caller.get("/api/job")
             data2 = caller.get("/api/printer")
-            
             if state == 'Operational' and selectedFile:
                 print(colored("Printer Operational", 'green', attrs=['bold']))
                 print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])

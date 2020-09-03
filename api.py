@@ -11,7 +11,7 @@ class api:
         self.address = destination
         self.XapiKey = key
         self.header['X-API-Key']=key
-    
+
     def get(self, target):
         request = requests.get(self.address+target, headers=self.header)
         if request.status_code != 200:
