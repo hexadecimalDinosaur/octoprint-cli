@@ -11,22 +11,23 @@ This tool uses the OctoPrint API to control and view the status of 3D printers c
 This project is a work in progress. Some features may not work as intended or be missing. If you have suggestions or find bugs, please report them in [issues](https://github.com/UserBlackBox/octoprint-cli/issues). Feel free to fork this repo to fix issues or to implement new features.
 
 ## Features
+
 These are the features that have been implemented so far, more functions will be implemented in the future. Current progress on features can be found on the [project board](https://github.com/UserBlackBox/octoprint-cli/projects/1).
 
-* Printer connection status
-* Print job status
-* File selection
-* Pause, resume, cancel prints
-* Start print
-* System commands (shutdown, reboot, restart)
-* Listing files/folders
-* Retrieving file/folder information
-* Setting extruder and bed temperature
-* Connect and disconnect from printer
-* Continuous status output with temperature status and progress bar
-* GCODE and STL file uploads to server storage
-* Run G-code on printer from terminal
-* Layer information from OctoPrint-DisplayLayerProgress plugin if installed on server
+-   Printer connection status
+-   Print job status
+-   File selection
+-   Pause, resume, cancel prints
+-   Start print
+-   System commands (shutdown, reboot, restart)
+-   Listing files/folders
+-   Retrieving file/folder information
+-   Setting extruder and bed temperature
+-   Connect and disconnect from printer
+-   Continuous status output with temperature status and progress bar
+-   GCODE and STL file uploads to server storage
+-   Run G-code on printer from terminal
+-   Layer information from OctoPrint-DisplayLayerProgress plugin if installed on server
 
 ## Limitations
 
@@ -39,8 +40,9 @@ The program requires the API key to have all permissions to run
 ## Dependencies
 
 Can be found in `requirements.txt` and installed with `pip`
-* termcolor
-* requests
+
+-   termcolor
+-   requests
 
 ## Configuration
 
@@ -66,37 +68,36 @@ MaxBedTemp = 85
 
 ## Usage
 
-```
-octoprint-cli
-===============================================================================
-command line tool to control octoprint servers
+    octoprint-cli
+    ===============================================================================
+    command line tool to control octoprint servers
 
-COMMANDS
-octoprint-cli help                      view this help message
-octoprint-cli print status              view job status
-octoprint-cli print select [file]       load file
-octoprint-cli print start               start print
-octoprint-cli print pause               pause print
-octoprint-cli print resume              resume print
-octoprint-cli print cancel              cancel print
-octoprint-cli connection status         view connection status
-octoprint-cli connection connect        connect to printer with autodetection
-octoprint-cli connection disconnect     disconnect from printer
-octoprint-cli temp status               view printer temperature status
-octoprint-cli temp extruder [target]    set extruder target temperature
-octoprint-cli temp bed [target]         set bed target temperature
-octoprint-cli files list                list files and folders in root dir
-octoprint-cli files list [dir]          list files in directory
-octoprint-cli files info [name]         get information on file or folder
-octoprint-cli files upload [file]       upload file to OctoPrint server storage
-octoprint-cli system restart            restart OctoPrint server
-octoprint-cli system restart-safe       restart OctoPrint server to safe mode
-octoprint-cli system reboot             reboot server
-octoprint-cli system shutdown           shutdown server
-octoprint-cli continuous                get refreshing continuous status
-octoprint-cli gcode "[command]"         run gcode on printer
-octoprint-cli layers                    view DisplayLayerProgress information
-```
+    COMMANDS
+    octoprint-cli help                      view this help message
+    octoprint-cli print status              view job status
+    octoprint-cli print select [file]       load file
+    octoprint-cli print start               start print
+    octoprint-cli print pause               pause print
+    octoprint-cli print resume              resume print
+    octoprint-cli print cancel              cancel print
+    octoprint-cli connection status         view connection status
+    octoprint-cli connection connect        connect to printer with autodetection
+    octoprint-cli connection disconnect     disconnect from printer
+    octoprint-cli temp status               view printer temperature status
+    octoprint-cli temp extruder [target]    set extruder target temperature
+    octoprint-cli temp bed [target]         set bed target temperature
+    octoprint-cli files list                list files and folders in root dir
+    octoprint-cli files list [dir]          list files in directory
+    octoprint-cli files info [name]         get information on file or folder
+    octoprint-cli files upload [file]       upload file to OctoPrint server storage
+    octoprint-cli system restart            restart OctoPrint server
+    octoprint-cli system restart-safe       restart OctoPrint server to safe mode
+    octoprint-cli system reboot             reboot server
+    octoprint-cli system shutdown           shutdown server
+    octoprint-cli continuous                get refreshing continuous status
+    octoprint-cli gcode "[command]"         run gcode on printer
+    octoprint-cli layers                    view DisplayLayerProgress information
 
 ## Completions
+
 A zsh completion file can be found in `_octoprint-cli`. This completion file will be updated as new features are added to the program
