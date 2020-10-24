@@ -551,6 +551,116 @@ def system_shutdown(args):
 com_system_shutdown = coms_system.add_parser('shutdown', description='shutdown OctoPrint server', help='shutdown OctoPrint server')
 com_system_shutdown.set_defaults(func=system_shutdown)
 
+com_files = subparsers.add_parser('files', description='server file management commands', help='server file management commands')
+coms_files = com_files.add_subparsers()
+
+def files_list(args):
+    container = 'files'
+    if args.path:
+        if args.path.startswith("/"):
+            args.path = args.path[1:]
+        if args.path.endswith("/"):
+            args.path = args.path[:-1]
+        print("Listing files in "+args.path)
+        container = 'children'
+        data = caller.get("/api/files/local/"+args.path)
+        if data == 404:
+            print(colored("Folder does not exist", 'red', attrs=['bold']))
+            sys.exit(1)
+    else:
+        data = caller.get("/api/files")
+    longestName=0
+    longestType=0
+    folders = []
+    files = []
+    for i in data[container]:
+        if len(i['name']) > longestName: longestName = len(i['name'])
+        if len(i['type']) > longestType: longestType = len(i['type'])
+        if i['type'] == 'folder':
+            folders.append(i)
+        else:
+            files.append(i)
+    print(colored("NAME", attrs=['bold']) + (" "*longestName) + colored("TYPE", attrs=['bold']) + (" "*longestType) + colored("SIZE", attrs=['bold'])) #table headings
+    longestName+=4
+    longestType+=4
+    folders.sort(key=lambda e : e['name'])
+    files.sort(key=lambda e : e['name'])
+    for i in folders:
+        print(i['name'] + ((longestName-len(i['name']))*" ") + i['type'] + ((longestType-len(i['type']))*" "),end='')
+        try:
+            if i['type'] != 'folder': print(str(round(i['size']/1048576.0,2)) + " MB")
+            else: print()
+        except KeyError: print()
+    for i in files:
+        print(i['name'] + ((longestName-len(i['name']))*" ") + i['type'] + ((longestType-len(i['type']))*" "),end='')
+        try:
+            if i['type'] != 'folder': print(str(round(i['size']/1048576.0,2)) + " MB")
+            else: print()
+        except KeyError: print()
+    if container=='files': print(colored("\nFree space: ", attrs=['bold'])+str(round(data['free']/1073741824.0,3))+" GB") #disk space
+    sys.exit(0)
+
+com_files_list = coms_files.add_parser('list', description='list files from server', help='list files from server')
+com_files_list.set_defaults(func=files_list)
+com_files_list.add_argument('-p', '--path', type=str, dest='path', action='store', help='path for listing files from a folder')
+
+def files_info(args):
+    if args.path.startswith("/"):
+        args.path = args.path[1:]
+    data = caller.get("/api/files/local/"+args.path)
+    if data == 404 or data == 500:
+        print(colored("File or folder not found", 'red', attrs=['bold']))
+        sys.exit(1)
+    print(colored("Name: ", attrs=['bold'])+data['name'])
+    print(colored("Path: ", attrs=['bold'])+data['refs']['resource'].replace(destination+'/api/files/local/',''))
+    print(colored("Type: ", attrs=['bold'])+data['type'])
+    try:
+        print(colored("Size: ", attrs=['bold'])+str(round(data['size']/1048576.0,2))+" MB")
+    except KeyError:
+        pass
+    if data['type'] == 'machinecode':
+        try:
+            print(colored("Estimated Print Time: ", attrs=['bold'])+str(datetime.timedelta(seconds=data['gcodeAnalysis']['estimatedPrintTime'])).split(".")[0])
+        except KeyError:
+            pass
+        try:
+            print(colored("Successful Prints: ", attrs=['bold'])+str(data['prints']['success']))
+        except KeyError:
+            pass
+        try:
+            print(colored("Failed Prints: ", attrs=['bold'])+str(data['prints']['failure']))
+        except KeyError:
+            pass
+    sys.exit(0)
+
+com_files_info = coms_files.add_parser('info', description='get info on a file or folder', help='get info on a file or folder')
+com_files_info.set_defaults(func=files_info)
+com_files_info.add_argument('path', type=str, help='path to file/folder')
+
+def files_upload(args):
+    if not os.path.exists(args.path):
+        print(colored("File not found", 'red', attrs=['bold']))
+        sys.exit(1)
+    path=""
+    data = caller.fileUpload(args.path)
+    
+    if data==415:
+        print(colored("Invalid file type", 'red', attrs=['bold']))
+        sys.exit(1)
+    if data==409:
+        print(colored("File upload is in conflict with server state", 'red', attrs=['bold']))
+        sys.exit(1)
+    if type(data) is dict:
+        print(colored("File uploaded to OctoPrint", 'green', attrs=['bold']))
+        sys.exit(0)
+    else:
+        print(colored("Unable to upload file", 'red', attrs=['bold']))
+        sys.exit(0)
+
+com_files_upload = coms_files.add_parser('upload', description='upload a file to the server', help='upload a file to the server')
+com_files_upload.set_defaults(func=files_upload)
+com_files_upload.add_argument('path', type=str, help='path to local file to upload')
+
 def help(args):
     print(parser.format_help())
     sys.exit(0)
