@@ -370,6 +370,29 @@ def print_resume(args):
 com_print_resume = coms_print.add_parser('resume', description='resume current print job')
 com_print_resume.set_defaults(func=print_resume)
 
+com_connection = subparsers.add_parser('connection', description='printer connection commands')
+coms_connections = com_connection.add_subparsers()
+
+def connection_status(args):
+    data = caller.get('/api/connection')
+    if data['current']['state'] in ('Printing', 'Operational'):
+        print(colored(data['current']['state'], 'green', attrs=['bold']))
+        print(colored("Printer Profile: ", attrs=['bold']) + data['options']['printerProfiles'][0]['name'])
+        print(colored("Port: ", attrs=['bold']) + data['current']['port'])
+        print(colored("Baudrate: ", attrs=['bold']) + str(data['current']['baudrate']))
+    elif data['current']['state'] == 'Closed': #disconnected
+        print(colored("Printer Disconnected", 'red', attrs=['bold']))
+        print(colored("Ports: ", attrs=['bold'])+",".join(data['options']['ports']))
+        print(colored("Baudrates: ", attrs=['bold'])+", ".join(list(map(str,data['options']['baudrates']))))
+    elif data['current']['state'].startswith("Error"): #connection error
+        print(colored("Error", 'red', attrs=['bold']))
+        print(colored("Error: ", attrs=['bold'])+data['current']['state'][7:])
+        print(colored("Ports: ", attrs=['bold'])+",".join(data['options']['ports']))
+        print(colored("Baudrates: ", attrs=['bold'])+", ".join(list(map(str,data['options']['baudrates']))))
+
+com_connection_status = coms_connections.add_parser('status', description='get printer connection status')
+com_connection_status.set_defaults(func=connection_status)
+
 def help(args):
     print(parser.format_help())
     sys.exit(0)
