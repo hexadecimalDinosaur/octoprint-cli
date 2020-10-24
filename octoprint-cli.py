@@ -419,6 +419,18 @@ com_connection_connect.set_defaults(func=connection_connect)
 com_connection_connect.add_argument('-p', '--port', type=str, dest='port', action='store', help='serial port')
 com_connection_connect.add_argument('-b', '--baudrate', type=int, dest='baudrate', action='store', help='connection baudrate')
 
+def connection_disconnect(args):
+    code = caller.post("/api/connection", {"command":"disconnect"})
+    if code == 204:
+        print("Printer disconnected")
+        sys.exit(0)
+    else:
+        print(colored("Unable to disconnect from printer", 'red', attrs=['bold']))
+        sys.exit(1)
+
+com_connection_disconnect = coms_connections.add_parser('disconnect', description='disconnect from printer')
+com_connection_disconnect.set_defaults(func=connection_disconnect)
+
 def help(args):
     print(parser.format_help())
     sys.exit(0)
