@@ -216,7 +216,7 @@ def print_status(args):
         print(colored("Printer Disconnected", 'red', attrs=['bold']))
         print(state)
     elif state.startswith('Error'): #Error status
-        print(colored("❌ Error", 'red', attrs=['bold']))
+        print(colored("Error", 'red', attrs=['bold']))
         print(colored("Error: ", attrs=['bold'])+state[7:])
     else:
         selectedFile = caller.getFile()
