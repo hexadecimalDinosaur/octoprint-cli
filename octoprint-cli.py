@@ -431,6 +431,67 @@ def connection_disconnect(args):
 com_connection_disconnect = coms_connections.add_parser('disconnect', description='disconnect from printer')
 com_connection_disconnect.set_defaults(func=connection_disconnect)
 
+com_temp = subparsers.add_parser('temp', description='printer temperature commands')
+coms_temp = com_temp.add_subparsers()
+
+def temp_status(args):
+    data = caller.get("/api/printer")
+    if data == 409:
+        print(colored("Printer is not operational", 'red', attrs=['bold']))
+        sys.exit(1)
+    if type(data) is dict:
+        print(colored("Extruder Temp: ", attrs=['bold'])+str(data['temperature']['tool0']['actual'])+"°C")
+        print(colored("Extruder Target: ", attrs=['bold'])+str(data['temperature']['tool0']['target'])+"°C")
+        print(colored("Bed Temp: ", attrs=['bold'])+str(data['temperature']['bed']['actual'])+"°C")
+        print(colored("Bed Target: ", attrs=['bold'])+str(data['temperature']['bed']['target'])+"°C")
+
+com_temp_status = coms_temp.add_parser('status', description='view temperature status of extruder and print bed')
+com_temp_status.set_defaults(func=temp_status)
+
+def temp_extruder(args):
+    try:
+        if args.temperature > int(config['print']['MaxExtruderTemp']):
+            print(colored("Target temp is higher than the limit set in the configuration file", 'red', attrs=['bold']))
+            sys.exit(2)
+    except KeyError:
+        pass
+    code = caller.post("/api/printer/tool", {'command':'target','targets':{'tool0':args.temperature}})
+    if code == 204:
+        print(colored("Extruder temp set to " + str(args.temperature)+"°C", 'green', attrs=['bold']))
+        sys.exit(0)
+    elif code == 409:
+        print(colored("Printer is not operational", 'red', attrs=['bold']))
+        sys.exit(1)
+    else:
+        print(colored("Unable to change temperature", 'red', attrs=['bold']))
+        sys.exit(1)
+
+com_temp_extruder = coms_temp.add_parser('extruder', description='set extruder target temperature')
+com_temp_extruder.set_defaults(func=temp_extruder)
+com_temp_extruder.add_argument('temperature', type=int, help='target temperature, if set to 0 the extruder will be turned off')
+
+def temp_bed(args):
+    try:
+        if args.temperature > int(config['print']['MaxBedTemp']):
+            print(colored("Target temp is higher than the limit set in the configuration file", 'red', attrs=['bold']))
+            sys.exit(2)
+    except KeyError:
+        pass
+    code = caller.post("/api/printer/bed", {'command':'target','target':args.temperature})
+    if code == 204:
+        print(colored("Bed temp set to " + str(args.temperature)+"°C", 'green', attrs=['bold']))
+        sys.exit(0)
+    elif code == 409:
+        print(colored("Printer is not operational", 'red', attrs=['bold']))
+        sys.exit(1)
+    else:
+        print(colored("Unable to change temperature", 'red', attrs=['bold']))
+        sys.exit(1)
+
+com_temp_bed = coms_temp.add_parser('bed', description='set print bed target temperature')
+com_temp_bed.set_defaults(func=temp_bed)
+com_temp_bed.add_argument('temperature', type=int, help='target temperature, if set to 0 the bed will be turned off')
+
 def help(args):
     print(parser.format_help())
     sys.exit(0)
