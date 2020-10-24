@@ -62,7 +62,14 @@ try:
 except KeyError:
     pass
 if color == True:
-    from termcolor import colored
+    try:
+        from termcolor import colored
+    except ImportError:
+        print("termcolor module not installed")
+        sys.exit(1)
+else:
+    def colored(*args, attrs=None):
+        return args[0]
 
 def version(args):
     data=caller.getVersionInfo()
