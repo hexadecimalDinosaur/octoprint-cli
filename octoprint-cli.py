@@ -393,6 +393,32 @@ def connection_status(args):
 com_connection_status = coms_connections.add_parser('status', description='get printer connection status')
 com_connection_status.set_defaults(func=connection_status)
 
+def connection_connect(args):
+    data = {'command':'connect', 'Content-Type':'application/json'}
+    if args.port:
+        data['port'] = args.port
+    if args.baudrate:
+        data['baudrate'] = args.baudrate
+    code = caller.post("/api/connection", data)
+    if code == 400:
+        print(colored("Port or baudrate is incorrect", 'red', attrs=['bold']))
+        sys.exit(1)
+    elif code == 204 and caller.getState().startswith("Error"):
+        print(colored("Unable to connect to printer", 'red', attrs=['bold']))
+        print(caller.getState())
+        sys.exit(1)
+    elif code == 204:
+        print(colored("Printer connected", 'green', attrs=['bold']))
+        sys.exit(0)
+    else:
+        print(colored("Unable to connect to printer", 'red', attrs=['bold']))
+        sys.exit(1)
+
+com_connection_connect = coms_connections.add_parser('connect', description='connect to printer')
+com_connection_connect.set_defaults(func=connection_connect)
+com_connection_connect.add_argument('-p', '--port', type=str, dest='port', action='store', help='serial port')
+com_connection_connect.add_argument('-b', '--baudrate', type=int, dest='baudrate', action='store', help='connection baudrate')
+
 def help(args):
     print(parser.format_help())
     sys.exit(0)
