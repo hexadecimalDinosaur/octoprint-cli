@@ -15,13 +15,13 @@ optionals = parser.add_argument_group()
 subparsers = parser.add_subparsers()
 
 def loadConfig(path):
-    configComplete = True
-    configExists = False
     try:
         open(os.path.join(path))
         config.read(os.path.join(path))
-        config['server']['ServerAddress']
-        config['server']['ApiKey']
+        if config['server']['ServerAddress']:
+            pass
+        if config['server']['ApiKey']:
+            pass
         return True
     except KeyError:
         return False
@@ -76,7 +76,7 @@ com_version.set_defaults(func=version)
 
 def continuous(args):
     try:
-        while True: 
+        while True:
             lines = 0
             if not(caller.getState() in ('Operational', 'Printing', 'Paused', 'Pausing', 'Cancelling')):
                 print(colored(caller.getState(),'red',attrs=['bold']))
@@ -641,7 +641,6 @@ def files_upload(args):
     if not os.path.exists(args.path):
         print(colored("File not found", 'red', attrs=['bold']))
         sys.exit(1)
-    path=""
     data = caller.fileUpload(args.path)
     
     if data==415:
@@ -664,7 +663,7 @@ com_files_upload.add_argument('path', type=str, help='path to local file to uplo
 options = parser.parse_args()
 try:
     options.func(options)
-except AttributeError as e:
+except AttributeError:
     print(colored("Invalid or Missing Arguments", 'red', attrs=['bold']))
     print(parser.format_help())
     sys.exit(2)
