@@ -202,7 +202,7 @@ def gcode(args):
     sys.exit(0)
 
 com_gcode = subparsers.add_parser('gcode', description='run gcode on printer')
-com_gcode.add_argument('command')
+com_gcode.add_argument('command', type=str, help='gcode command')
 com_gcode.set_defaults(func=gcode)
 
 com_print = subparsers.add_parser('print', description='print job commands')
