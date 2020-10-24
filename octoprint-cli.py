@@ -71,15 +71,8 @@ def version(args):
     print("OctoPrint v" + data['server'] + " - API v" + data['api'])
     sys.exit(0)
 
-com_version = subparsers.add_parser('version')
+com_version = subparsers.add_parser('version', description='get OctoPrint version')
 com_version.set_defaults(func=version)
-
-def help(args):
-    print(parser.format_help())
-    sys.exit(0)
-
-com_help = subparsers.add_parser('help')
-com_help.set_defaults(func=help) #TODO individual subcommand help pages
 
 def continuous(args):
     try:
@@ -89,7 +82,7 @@ def continuous(args):
                 print(colored(caller.getState(),'red',attrs=['bold']))
                 data = caller.get('/api/connection')
                 print(colored("Printer Profile: ", attrs=['bold']) + data['options']['printerProfiles'][0]['name'])
-                print(colored("Port: ", attrs=['bold']) + data['current']['port'])
+                print(colored("Port: ", attrs=['bold']) + str(data['current']['port']))
                 print(colored("Baudrate: ", attrs=['bold']) + str(data['current']['baudrate']))
                 lines = 4
             if caller.getState() == 'Operational':
@@ -179,8 +172,128 @@ def continuous(args):
         print(colored("Continuous output terminated", attrs=['bold']))
         sys.exit(0)
 
-com_continuous = subparsers.add_parser('continuous')
+com_continuous = subparsers.add_parser('continuous', description='get continuous refreshing status with temperature information and progress information')
 com_continuous.set_defaults(func=continuous)
+
+def layers(args):
+    data=caller.get("/plugin/DisplayLayerProgress/values")
+    if data==404:
+        print(colored("The DisplayLayerProgress is not installed or enabled on the OctoPrint server", 'red', attrs=['bold']))
+        sys.exit(1)
+    elif type(data) == dict and caller.getState() in ('Printing', 'Paused', 'Pausing', 'Finishing'):
+        print(colored("Current Layer: ", 'white', attrs=['bold'])+data['layer']['current']+"/"+data['layer']['total'])
+        print(colored("Current Height: ", 'white', attrs=['bold'])+data['height']['current']+'/'+data['height']['totalFormatted']+'mm')
+        print(colored("Average Layer Duration: ", 'white', attrs=['bold'])+data['layer']['averageLayerDuration'].replace('h','').replace('s','').replace('m',''))
+        print(colored("Last Layer Duration: ", 'white', attrs=['bold'])+data['layer']['lastLayerDuration'].replace('h','').replace('s','').replace('m',''))
+        sys.exit(0)
+    else:
+        print(colored('Unable to retreive layer information', 'red', attrs=['bold']))
+        sys.exit(1)
+
+com_layers = subparsers.add_parser('layers', description='get layer information from the DisplayLayerProgress plugin')
+com_layers.set_defaults(func=layers)
+
+def gcode(args):
+    command = args.command
+    request = caller.post('/api/printer/command', {'command':command})
+    if request != 204:
+        print(colored('G-code execution failed', 'red', attrs=['bold']))
+        sys.exit(1)
+    sys.exit(0)
+
+com_gcode = subparsers.add_parser('gcode', description='run gcode on printer')
+com_gcode.add_argument('command')
+com_gcode.set_defaults(func=gcode)
+
+com_print = subparsers.add_parser('print', description='print job commands')
+coms_print = com_print.add_subparsers()
+
+def print_status(args):
+    state = caller.getState()  
+    if state == 'Offline': #printer disconnected
+        print(colored("Printer Disconnected", 'red', attrs=['bold']))
+    elif state.startswith('Offline'): #Offline status with error message following
+        print(colored("Printer Disconnected", 'red', attrs=['bold']))
+        print(state)
+    elif state.startswith('Error'): #Error status
+        print(colored("❌ Error", 'red', attrs=['bold']))
+        print(colored("Error: ", attrs=['bold'])+state[7:])
+    else:
+        selectedFile = caller.getFile()
+        data = caller.get("/api/job")
+        data2 = caller.get("/api/printer")
+        if state == 'Operational' and selectedFile:
+            print(colored("Printer Operational", 'green', attrs=['bold']))
+            print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
+            print(colored("Estimated Print Time: ", attrs=['bold']) + caller.getTotalTime())
+            print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+            print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
+            print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+            print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
+        elif state == 'Operational':
+            print(colored("Printer Operational", 'green', attrs=['bold']))
+            print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+            print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
+            print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+            print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
+        elif state == 'Printing':
+            print(colored("Printing", 'green', attrs=['bold']))
+            print(colored("File: ", attrs=['bold']) + data['job']['file']['name'])
+            print(colored("Estimated Total Print Time: ", attrs=['bold']) + caller.getTotalTime())
+            print(colored("Estimated Print Time Left: ", attrs=['bold']) + caller.getTimeLeft())
+            print(colored("Progress: ", attrs=['bold']) + str(round(data['progress']['completion']))+"%")
+            print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+            print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
+            print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+            print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
+        elif state == 'Paused':
+            print(colored("Paused", 'yellow', attrs=['bold']))
+            print(colored("File: ", attrs=['bold']) + data['job']['file']['name'])
+            print(colored("Estimated Total Print Time: ", attrs=['bold']) + caller.getTotalTime())
+            print(colored("Estimated Print Time Left: ", attrs=['bold']) + caller.getTimeLeft())
+            print(colored("Progress: ", attrs=['bold']) + str(round(data['progress']['completion']))+"%")
+            print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+            print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
+            print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+            print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
+        elif state == 'Pausing':
+            print(colored("Pausing", 'yellow', attrs=['bold']))
+            print(colored("File: ", attrs=['bold']) + data['job']['file']['name'])
+            print(colored("Estimated Total Print Time: ", attrs=['bold']) + caller.getTotalTime())
+            print(colored("Estimated Print Time Left: ", attrs=['bold']) + caller.getTimeLeft())
+            print(colored("Progress: ", attrs=['bold']) + str(round(data['progress']['completion']))+"%")
+            print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+            print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
+            print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+            print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
+        elif state == 'Cancelling':
+            print(colored("Cancelling", 'red', attrs=['bold']))
+            print(colored("File: ", attrs=['bold']) + data['job']['file']['name'])
+            print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+            print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
+            print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+            print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
+        elif state == 'Finishing':
+            print(colored("Finishing", 'green', attrs=['bold']))
+            print(colored("File: ", attrs=['bold']) + data['job']['file']['name'])
+            print(colored("Estimated Total Print Time: ", attrs=['bold']) + caller.getTotalTime())
+            print(colored("Estimated Print Time Left: ", attrs=['bold']) + caller.getTimeLeft())
+            print(colored("Progress: ", attrs=['bold']) + str(round(data['progress']['completion']))+"%")
+            print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+            print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
+            print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+            print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
+    sys.exit(0)
+
+com_print_status = coms_print.add_parser('status', description='view print job status')
+com_print_status.set_defaults(func=print_status)
+
+def help(args):
+    print(parser.format_help())
+    sys.exit(0)
+
+com_help = subparsers.add_parser('help')
+com_help.set_defaults(func=help) #TODO individual subcommand help pages
 
 options = parser.parse_args()
 try:
