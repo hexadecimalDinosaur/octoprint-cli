@@ -307,6 +307,69 @@ com_print_select = coms_print.add_parser('select', description='select file on s
 com_print_select.set_defaults(func=print_select)
 com_print_select.add_argument('path')
 
+def print_start(args):
+    if caller.getFile() == None:
+        print(colored("No file has been loaded", 'red', attrs=['bold']))
+        sys.exit(1)
+    code = caller.printRequests('start')
+    if code == 409 and caller.getState() in ('Printing', 'Paused', 'Pausing', 'Cancelling'):
+        print(colored("Printer is already printing", 'red', attrs=['bold']))
+        sys.exit(1)
+    elif code == 409:
+        print(colored("Unable to print", 'red', attrs=['bold']))
+        sys.exit(1)
+    elif code == 204:
+        print(colored("Starting print",'green',attrs=['bold']))
+        sys.exit(0)
+
+com_print_start = coms_print.add_parser('start', description='start print job on selected file')
+com_print_start.set_defaults(func=print_start)
+
+def print_cancel(args):
+    code = caller.printRequests('cancel')
+    if code == 409:
+        print(colored('No print job is running', 'red', attrs=['bold']))
+        sys.exit(1)
+    elif code == 204:
+        print('Print job cancelling')
+        sys.exit(0)
+    else:
+        print(colored('Unable to cancel', 'red', attrs=['bold']))
+        sys.exit(1)
+
+com_print_cancel = coms_print.add_parser('cancel', description='cancel current print job')
+com_print_cancel.set_defaults(func=print_cancel)
+
+def print_pause(args):
+    code = caller.pauseRequests('pause')
+    if code == 409:
+        print(colored('No print job is running', 'red', attrs=['bold']))
+        sys.exit(1)
+    elif code == 204:
+        print('Print job pausing')
+        sys.exit(0)
+    else:
+        print(colored('Unable to pause', 'red', attrs=['bold']))
+        sys.exit(1)
+
+com_print_pause = coms_print.add_parser('pause', description='pause current print job')
+com_print_pause.set_defaults(func=print_pause)
+
+def print_resume(args):
+    code = caller.pauseRequests('resume')
+    if code == 409:
+        print(colored('No print job is running', 'red', attrs=['bold']))
+        sys.exit(1)
+    elif code == 204:
+        print('Print job resuming')
+        sys.exit(0)
+    else:
+        print(colored('Unable to resume', 'red', attrs=['bold']))
+        sys.exit(1)
+
+com_print_resume = coms_print.add_parser('resume', description='resume current print job')
+com_print_resume.set_defaults(func=print_resume)
+
 def help(args):
     print(parser.format_help())
     sys.exit(0)
