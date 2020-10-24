@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # class to make the requests
+import sys
 try:
     import requests
 except ImportError:
