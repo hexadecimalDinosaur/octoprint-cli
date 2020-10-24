@@ -661,13 +661,6 @@ com_files_upload = coms_files.add_parser('upload', description='upload a file to
 com_files_upload.set_defaults(func=files_upload)
 com_files_upload.add_argument('path', type=str, help='path to local file to upload')
 
-def help(args):
-    print(parser.format_help())
-    sys.exit(0)
-
-com_help = subparsers.add_parser('help')
-com_help.set_defaults(func=help) #TODO individual subcommand help pages
-
 options = parser.parse_args()
 try:
     options.func(options)
