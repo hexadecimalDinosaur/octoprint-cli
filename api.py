@@ -1,7 +1,10 @@
 #!/usr/bin/python3
 # class to make the requests
-import requests
-
+try:
+    import requests
+except ImportError:
+    print("requests module not installed")
+    sys.exit(1)
 class api:
     address = ""
     XapiKey = ""
