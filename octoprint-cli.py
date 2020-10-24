@@ -492,6 +492,65 @@ com_temp_bed = coms_temp.add_parser('bed', description='set print bed target tem
 com_temp_bed.set_defaults(func=temp_bed)
 com_temp_bed.add_argument('temperature', type=int, help='target temperature, if set to 0 the bed will be turned off')
 
+com_system = subparsers.add_parser('system', description='server management commands')
+coms_system = com_system.add_subparsers()
+
+def system_restart(args):
+    prompt = input(colored("You are restarting the server. Are you sure you wish to continue?",attrs=['bold'])+" [Y/n]: ")
+    if not(prompt.lower() == "y" or prompt.lower == "yes"):
+        sys.exit(0)
+    code = caller.post("/api/system/commands/core/restart",{})
+    if code != 204:
+        print(colored("Unable to restart",'red',attrs=['bold']))
+        sys.exit(1)
+    else:
+        print("OctoPrint is restarting")
+
+com_system_restart = coms_system.add_parser('restart', description='restart OctoPrint server')
+com_system_restart.set_defaults(func=system_restart)
+
+def system_restart_safe(args):
+    prompt = input(colored("You are restarting the server to safe mode. Are you sure you wish to continue?",attrs=['bold'])+" [Y/n]: ")
+    if not(prompt.lower() == "y" or prompt.lower == "yes"):
+        sys.exit(0)
+    code = caller.post("/api/system/commands/core/restart_safe",{})
+    if code != 204:
+        print(colored("Unable to restart",'red',attrs=['bold']))
+        sys.exit(1)
+    else:
+        print("OctoPrint is restarting to safe mode")
+
+com_system_restart_safe = coms_system.add_parser('restart-safe', description='restart OctoPrint server to safe mode')
+com_system_restart_safe.set_defaults(func=system_restart_safe)
+
+def system_reboot(args):
+    prompt = input(colored("You are rebooting the server. Are you sure you wish to continue?",attrs=['bold'])+" [Y/n]: ")
+    if not(prompt.lower() == "y" or prompt.lower == "yes"):
+        sys.exit(0)
+    code = caller.post("/api/system/commands/core/reboot",{})
+    if code != 204:
+        print(colored("Unable to reboot",'red',attrs=['bold']))
+        sys.exit(1)
+    else:
+        print("Server is rebooting")
+
+com_system_reboot = coms_system.add_parser('reboot', description='reboot OctoPrint server')
+com_system_reboot.set_defaults(func=system_reboot)
+
+def system_shutdown(args):
+    prompt = input(colored("You are shutting down the server. Are you sure you wish to continue?",attrs=['bold'])+" [Y/n]: ")
+    if not(prompt.lower() == "y" or prompt.lower == "yes"):
+        sys.exit(0)
+    code = caller.post("/api/system/commands/core/shutdown",{})
+    if code != 204:
+        print(colored("Unable to shutdown",'red',attrs=['bold']))
+        sys.exit(1)
+    else:
+        print("Server is shutting down")
+
+com_system_shutdown = coms_system.add_parser('shutdown', description='shutdown OctoPrint server')
+com_system_shutdown.set_defaults(func=system_shutdown)
+
 def help(args):
     print(parser.format_help())
     sys.exit(0)
