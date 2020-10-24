@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 import argparse
 import configparser
-from os.path import expanduser
 import os
 from api import api
 import sys
@@ -13,6 +12,9 @@ config = configparser.ConfigParser()
 parser = argparse.ArgumentParser(prog="octoprint-cli", description="Command line tool for controlling OctoPrint 3D printer servers", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 optionals = parser.add_argument_group()
 subparsers = parser.add_subparsers()
+caller = None
+destination = None
+key = None
 
 def loadConfig(path):
     try:
@@ -28,13 +30,24 @@ def loadConfig(path):
     except FileNotFoundError:
         return False
 
-if loadConfig(os.path.join(sys.path[0],'config.ini')):
-    pass
-elif loadConfig(os.path.expanduser('~/.config/octoprint-cli.ini')):
-    pass
-else:
-    print("Configuration file is not complete or does not exist")
-    sys.exit(1)
+def init_config():
+    global destination
+    global key
+    destination = config['server']['ServerAddress']
+    key = config['server']['ApiKey']
+
+    if not(destination.startswith('http://') or destination.startswith('https://')): #add http if missing
+        destination = "http://" + destination
+    if destination.endswith('/'): #remove trailing slash
+        destination = destination[:-1]
+    global caller
+    caller = api(key,destination)
+    if caller.connectionTest() == False:
+        print(colored("OctoPrint server cannot be reached", 'red', attrs=['bold']))
+        sys.exit(1)
+    if caller.authTest() == False:
+        print(colored("X-API-Key is incorrect", 'red', attrs=['bold']))
+        sys.exit(1)
 
 color = True #termcolor configuration
 if os.name=='nt':
@@ -50,21 +63,6 @@ except KeyError:
     pass
 if color == True:
     from termcolor import colored
-
-destination = config['server']['ServerAddress']
-key = config['server']['ApiKey']
-
-if not(destination.startswith('http://') or destination.startswith('https://')): #add http if missing
-    destination = "http://" + destination
-if destination.endswith('/'): #remove trailing slash
-    destination = destination[:-1]
-caller = api(key,destination)
-if caller.connectionTest() == False:
-    print(colored("OctoPrint server cannot be reached", 'red', attrs=['bold']))
-    sys.exit(1)
-if caller.authTest() == False:
-    print(colored("X-API-Key is incorrect", 'red', attrs=['bold']))
-    sys.exit(1)
 
 def version(args):
     data=caller.getVersionInfo()
@@ -660,7 +658,26 @@ com_files_upload = coms_files.add_parser('upload', description='upload a file to
 com_files_upload.set_defaults(func=files_upload)
 com_files_upload.add_argument('path', type=str, help='path to local file to upload')
 
+opt_config = optionals.add_argument('-c', '--config', type=str, dest='config_path', action='store', help='custom path to config file')
+
 options = parser.parse_args()
+
+if options.config_path != None:
+    if loadConfig(options.config_path):
+        pass
+    else:
+        print("Configuration file is not complete or does not exist")
+        sys.exit(1)
+else:
+    if loadConfig(os.path.join(sys.path[0],'config.ini')):
+        pass
+    elif loadConfig(os.path.expanduser('~/.config/octoprint-cli.ini')):
+        pass
+    else:
+        print("Configuration file is not complete or does not exist")
+        sys.exit(1)
+init_config()
+
 try:
     options.func(options)
 except AttributeError:
