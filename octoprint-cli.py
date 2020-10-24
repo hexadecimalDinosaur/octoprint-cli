@@ -288,6 +288,25 @@ def print_status(args):
 com_print_status = coms_print.add_parser('status', description='view print job status')
 com_print_status.set_defaults(func=print_status)
 
+def print_select(args):
+    path = args.path
+    if path.startswith('/'):
+        path = path[1:]
+    code = caller.selectFile(path)
+    if code == 404:
+        print(colored('File does not exist', 'red', attrs=['bold']))
+        sys.exit(1)
+    if code == 204:
+        print(path+" has been loaded")
+        sys.exit(0)
+    elif code != 204:
+        print(colored('Unable to select file'))
+        sys.exit(1)
+
+com_print_select = coms_print.add_parser('select', description='select file on server to load')
+com_print_select.set_defaults(func=print_select)
+com_print_select.add_argument('path')
+
 def help(args):
     print(parser.format_help())
     sys.exit(0)
