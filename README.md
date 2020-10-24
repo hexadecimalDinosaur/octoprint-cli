@@ -68,35 +68,83 @@ MaxBedTemp = 85
 
 ## Usage
 
-    octoprint-cli
-    ===============================================================================
-    command line tool to control octoprint servers
+<details>
+<summary><b>General Commands</b></summary><br>
 
-    COMMANDS
-    octoprint-cli help                      view this help message
-    octoprint-cli print status              view job status
-    octoprint-cli print select [file]       load file
-    octoprint-cli print start               start print
-    octoprint-cli print pause               pause print
-    octoprint-cli print resume              resume print
-    octoprint-cli print cancel              cancel print
-    octoprint-cli connection status         view connection status
-    octoprint-cli connection connect        connect to printer with autodetection
-    octoprint-cli connection disconnect     disconnect from printer
-    octoprint-cli temp status               view printer temperature status
-    octoprint-cli temp extruder [target]    set extruder target temperature
-    octoprint-cli temp bed [target]         set bed target temperature
-    octoprint-cli files list                list files and folders in root dir
-    octoprint-cli files list [dir]          list files in directory
-    octoprint-cli files info [name]         get information on file or folder
-    octoprint-cli files upload [file]       upload file to OctoPrint server storage
-    octoprint-cli system restart            restart OctoPrint server
-    octoprint-cli system restart-safe       restart OctoPrint server to safe mode
-    octoprint-cli system reboot             reboot server
-    octoprint-cli system shutdown           shutdown server
-    octoprint-cli continuous                get refreshing continuous status
-    octoprint-cli gcode "[command]"         run gcode on printer
-    octoprint-cli layers                    view DisplayLayerProgress information
+`octoprint-cli version` - get OctoPrint server version information
+
+`octoprint-cli continuous` - get continuous refreshing temperature, layer, and print status
+
+</details>
+
+<details>
+<summary><b>Print Commands</b></summary><br>
+
+`octoprint-cli print status` - get current print job status
+
+`octoprint-cli print select [path]` - load file on server
+
+`octoprint-cli print start` - start print job on loaded file
+
+`octoprint-cli print cancel` - cancel current print job
+
+`octoprint-cli print pause` - pauses the current print job
+
+`octoprint-cli print resume` - resumes the current print job
+
+`octoprint-cli gcode [command]` - run GCODE command on printer
+
+`octoprint-cli layers` - get layer information during prints from the DisplayLayerProgress plugin
+
+</details>
+
+<details>
+<summary><b>Connection Commands</b></summary><br>
+
+`octoprint-cli connection status` - get OctoPrint print connection information
+
+`octoprint-cli connection connect` - connect to printer, serial port and baudrate are decided automatically unless specified with the `-b [BAUDRATE]` and `-p [PORT]` flags
+
+`octoprint-cli connection disconnect` - disconnect from printer
+
+</details>
+
+<details>
+<summary><b>Temperature Commands</b></summary><br>
+
+`octoprint-cli temp status` - get current and target temperatures of extruder and bed
+
+`octoprint-cli temp extruder [temp]` - set target temperature of extruder
+
+`octoprint-cli temp bed [temp]` - set target temperature of print bed
+
+</details>
+
+<details>
+<summary><b>System Commands</b></summary><br>
+
+`octoprint-cli system restart` - restart OctoPrint server
+
+`octoprint-cli system restart-safe` - restart OctoPrint server to safe mode
+
+`octoprint-cli reboot` - reboot OctoPrint server
+
+`octoprint-cli shutdown` - shutdown OctoPrint server
+
+</details>
+
+<details>
+<summary><b>File Commands</b></summary><br>
+
+`octoprint-cli files list` - list files on OctoPrint server, listing in folders can be done with `-p [PATH]` flag
+
+`octoprint-cli files info [file]` - get information on file on server
+
+`octoprint-cli files upload [file]` - upload local file to server
+
+</details>
+
+The `-h` or `--help` flag can bring up a help message for all commands
 
 ## Completions
 
