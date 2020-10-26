@@ -49,28 +49,6 @@ def init_config():
         print(colored("X-API-Key is incorrect", 'red', attrs=['bold']))
         sys.exit(1)
 
-color = True #termcolor configuration
-if os.name=='nt':
-    def colored(*args, attrs=None):
-        return args[0]
-    color = False
-try:
-    if config['preferences']['FormattedText'] == "false":
-        def colored(*args, attrs=None):
-            return args[0]
-        color = False
-except KeyError:
-    pass
-if color == True:
-    try:
-        from termcolor import colored
-    except ImportError:
-        print("termcolor module not installed")
-        sys.exit(1)
-else:
-    def colored(*args, attrs=None):
-        return args[0]
-
 def version(args):
     data=caller.getVersionInfo()
     print("OctoPrint v" + data['server'] + " - API v" + data['api'])
@@ -684,6 +662,28 @@ else:
         print("Configuration file is not complete or does not exist")
         sys.exit(1)
 init_config()
+
+color = True #termcolor configuration
+if os.name=='nt':
+    def colored(*args, attrs=None):
+        return args[0]
+    color = False
+try:
+    if config['preferences']['FormattedText'] == "false":
+        def colored(*args, attrs=None):
+            return args[0]
+        color = False
+except KeyError:
+    pass
+if color == True:
+    try:
+        from termcolor import colored
+    except ImportError:
+        print("termcolor module not installed")
+        sys.exit(1)
+else:
+    def colored(*args, attrs=None):
+        return args[0]
 
 try:
     options.func(options)
