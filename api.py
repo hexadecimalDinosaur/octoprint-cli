@@ -21,7 +21,7 @@ class api:
         if request.status_code != 200:
             return request.status_code
         return request.json()
-    
+
     def post(self, target, data):
         request = requests.post(self.address+target, headers=self.header, json=(data))
         return request.status_code
