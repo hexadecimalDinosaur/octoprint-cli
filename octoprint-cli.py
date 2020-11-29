@@ -191,7 +191,7 @@ com_print = subparsers.add_parser('print', description='print job commands', hel
 coms_print = com_print.add_subparsers()
 
 def print_status(args):
-    state = caller.getState()  
+    state = caller.getState()
     if state == 'Offline': #printer disconnected
         print(colored("Printer Disconnected", 'red', attrs=['bold']))
     elif state.startswith('Offline'): #Offline status with error message following
@@ -624,7 +624,7 @@ def files_upload(args):
         print(colored("File not found", 'red', attrs=['bold']))
         sys.exit(1)
     data = caller.fileUpload(args.path)
-    
+
     if data==415:
         print(colored("Invalid file type", 'red', attrs=['bold']))
         sys.exit(1)
