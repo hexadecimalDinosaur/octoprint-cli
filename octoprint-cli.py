@@ -149,8 +149,7 @@ def continuous(args):
                 lines+=9
 
             time.sleep(3)
-            for i in range(lines):
-                sys.stdout.write("\033[F\033[K")
+            sys.stdout.write("\033[F\033[K"*lines)
     except KeyboardInterrupt:
         print(colored("Continuous output terminated", attrs=['bold']))
         sys.exit(0)
@@ -663,15 +662,17 @@ else:
         sys.exit(1)
 init_config()
 
+def nt_colored(*args, attrs=None):
+    return args[0]
+
+
 color = True #termcolor configuration
 if os.name=='nt':
-    def colored(*args, attrs=None):
-        return args[0]
+    colored = nt_colored
     color = False
 try:
     if config['preferences']['FormattedText'] == "false":
-        def colored(*args, attrs=None):
-            return args[0]
+        colored = nt_colored
         color = False
 except KeyError:
     pass
@@ -682,8 +683,7 @@ if color == True:
         print("termcolor module not installed")
         sys.exit(1)
 else:
-    def colored(*args, attrs=None):
-        return args[0]
+    colored = nt_colored
 
 try:
     options.func(options)
