@@ -9,7 +9,7 @@ import time
 import math
 import requests
 
-versionNumber = '3.0.1'
+versionNumber = '3.1.0'
 request = requests.get('https://api.github.com/repos/UserBlackBox/octoprint-cli/releases/latest')
 if request.status_code == 200:
     v = lambda t: tuple(map(int,t.split('.')))
