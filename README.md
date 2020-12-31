@@ -136,7 +136,7 @@ MaxBedTemp = 85
 <details>
 <summary><b>File Commands</b></summary><br>
 
-`octoprint-cli files list` - list files on OctoPrint server, listing in folders can be done with `-p [PATH]` flag
+`octoprint-cli files list` - list files on OctoPrint server, listing in folders can be done with `-p [PATH]` flag, files/folders can be filtered using the `--files` and `--folders` flags
 
 `octoprint-cli files info [file]` - get information on file on server
 
@@ -145,7 +145,3 @@ MaxBedTemp = 85
 </details>
 
 The `-h` or `--help` flag can bring up a help message for all commands
-
-## Completions
-
-A zsh completion file can be found in `_octoprint-cli`. This completion file will be updated as new features are added to the program
