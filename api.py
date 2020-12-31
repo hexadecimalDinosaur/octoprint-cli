@@ -12,6 +12,7 @@ class api:
     header = {}
 
     def __init__(self, key, destination):
+        """api caller constructor method"""
         self.address = destination
         self.XapiKey = key
         self.header['X-API-Key']=key
