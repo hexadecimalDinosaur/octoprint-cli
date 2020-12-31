@@ -525,24 +525,29 @@ def files_list(args):
     longestType+=4
     folders.sort(key=lambda e : e['name'])
     files.sort(key=lambda e : e['name'])
-    for i in folders:
-        print(i['name'] + ((longestName-len(i['name']))*" ") + i['type'] + ((longestType-len(i['type']))*" "),end='')
-        try:
-            if i['type'] != 'folder': print(str(round(i['size']/1048576.0,2)) + " MB")
-            else: print()
-        except KeyError: print()
-    for i in files:
-        print(i['name'] + ((longestName-len(i['name']))*" ") + i['type'] + ((longestType-len(i['type']))*" "),end='')
-        try:
-            if i['type'] != 'folder': print(str(round(i['size']/1048576.0,2)) + " MB")
-            else: print()
-        except KeyError: print()
+    if not args.files:
+        for i in folders:
+            print(i['name'] + ((longestName-len(i['name']))*" ") + i['type'] + ((longestType-len(i['type']))*" "),end='')
+            try:
+                if i['type'] != 'folder': print(str(round(i['size']/1048576.0,2)) + " MB")
+                else: print()
+            except KeyError: print()
+    if not args.folders:
+        for i in files:
+            print(i['name'] + ((longestName-len(i['name']))*" ") + i['type'] + ((longestType-len(i['type']))*" "),end='')
+            try:
+                if i['type'] != 'folder': print(str(round(i['size']/1048576.0,2)) + " MB")
+                else: print()
+            except KeyError: print()
     if container=='files': print(colored("\nFree space: ", attrs=['bold'])+str(round(data['free']/1073741824.0,3))+" GB") #disk space
     sys.exit(0)
 
 com_files_list = coms_files.add_parser('list', description='list files from server', help='list files from server')
 com_files_list.set_defaults(func=files_list)
 com_files_list.add_argument('-p', '--path', type=str, dest='path', action='store', help='path for listing files from a folder')
+com_files_list_filters = com_files_list.add_mutually_exclusive_group()
+com_files_list_filters.add_argument('--folders', help='show only folders', action='store_true')
+com_files_list_filters.add_argument('--files', help='show only files', action='store_true')
 
 def files_info(args):
     if args.path.startswith("/"):
