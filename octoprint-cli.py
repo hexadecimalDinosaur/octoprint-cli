@@ -142,7 +142,7 @@ def layers(args):
     if data==404:
         print(colored("The DisplayLayerProgress is not installed or enabled on the OctoPrint server", 'red', attrs=['bold']))
         sys.exit(1)
-    elif type(data) == dict and caller.getState() in ('Printing', 'Paused', 'Pausing', 'Finishing'):
+    elif isinstance(data, dict) and caller.getState() in ('Printing', 'Paused', 'Pausing', 'Finishing'):
         print(colored("Current Layer: ", 'white', attrs=['bold'])+data['layer']['current']+"/"+data['layer']['total'])
         print(colored("Current Height: ", 'white', attrs=['bold'])+data['height']['current']+'/'+data['height']['totalFormatted']+'mm')
         print(colored("Average Layer Duration: ", 'white', attrs=['bold'])+data['layer']['averageLayerDuration'].replace('h','').replace('s','').replace('m',''))
@@ -379,7 +379,7 @@ def temp_status(args):
     if data == 409:
         print(colored("Printer is not operational", 'red', attrs=['bold']))
         sys.exit(1)
-    if type(data) is dict:
+    if isinstance(data, dict):
         print(colored("Extruder Temp: ", attrs=['bold'])+str(data['temperature']['tool0']['actual'])+"°C")
         print(colored("Extruder Target: ", attrs=['bold'])+str(data['temperature']['tool0']['target'])+"°C")
         print(colored("Bed Temp: ", attrs=['bold'])+str(data['temperature']['bed']['actual'])+"°C")
