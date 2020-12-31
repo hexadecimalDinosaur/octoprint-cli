@@ -34,19 +34,19 @@ class api:
                 return False
         except requests.ConnectionError:
             return False
-    
+
     def authTest(self):
         if isinstance(self.get("/api/job"),dict):
             return True
         else:
             return False
-    
+
     def getVersionInfo(self):
         return self.get("/api/version")
 
     def getState(self):
         return self.get("/api/job")['state']
-    
+
     def getFile(self):
         return self.get("/api/job")['job']['file']['name']
 
@@ -67,7 +67,7 @@ class api:
         if len(str(time))==1:
             time = "0"+str(time)
         return str(hours)+":"+str(minutes)+":"+str(time)
-    
+
     def getTotalTime(self):
         time = self.get("/api/job")['job']['estimatedPrintTime']
         hours = int(time//3600)
@@ -82,7 +82,7 @@ class api:
 
     def selectFile(self, fileName):
         return self.post("/api/files/local/"+fileName, {'command':'select'})
-    
+
     def printRequests(self, command):
         return self.post("/api/job", {'command':command})
 
