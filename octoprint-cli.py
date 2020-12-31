@@ -50,12 +50,6 @@ def init_config():
         destination = destination[:-1]
     global caller
     caller = api(key,destination)
-    if caller.connectionTest() == False:
-        print(colored("OctoPrint server cannot be reached", 'red', attrs=['bold']))
-        sys.exit(1)
-    if caller.authTest() == False:
-        print(colored("X-API-Key is incorrect", 'red', attrs=['bold']))
-        sys.exit(1)
 
 def version(args):
     data=caller.getVersionInfo()
@@ -648,6 +642,13 @@ if color == True:
         sys.exit(1)
 else:
     colored = nt_colored
+
+if caller.connectionTest() == False:
+    print(colored("OctoPrint server cannot be reached", 'red', attrs=['bold']))
+    sys.exit(1)
+if caller.authTest() == False:
+    print(colored("X-API-Key is incorrect", 'red', attrs=['bold']))
+    sys.exit(1)
 
 try:
     options.func(options)
