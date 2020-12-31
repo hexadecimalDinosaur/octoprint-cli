@@ -7,6 +7,14 @@ import sys
 import datetime
 import time
 import math
+import requests
+
+versionNumber = '3.0.1'
+request = requests.get('https://api.github.com/repos/UserBlackBox/octoprint-cli/releases/latest')
+if request.status_code == 200:
+    v = lambda t: tuple(map(int,t.split('.')))
+    if v(request.json()['tag_name'][1:]) > v(versionNumber):
+        print("New version available at https://github.com/UserBlackBox/octoprint-cli/releases/latest")
 
 config = configparser.ConfigParser()
 parser = argparse.ArgumentParser(prog="octoprint-cli", description="Command line tool for controlling OctoPrint 3D printer servers", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
