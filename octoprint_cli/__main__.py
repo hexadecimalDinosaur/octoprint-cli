@@ -7,6 +7,7 @@ import datetime
 import time
 import math
 import requests
+from termcolor import colored
 
 config = configparser.ConfigParser()
 parser = argparse.ArgumentParser(prog="octoprint-cli", description="Command line tool for controlling OctoPrint 3D printer servers", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -713,7 +714,7 @@ def main():
     def nt_colored(*args, attrs=None):
         return args[0]
 
-
+    global colored
     color = True #termcolor configuration
     if os.name=='nt':
         colored = nt_colored
@@ -724,13 +725,7 @@ def main():
             color = False
     except KeyError:
         pass
-    if color == True:
-        try:
-            from termcolor import colored
-        except ImportError:
-            print("termcolor module not installed")
-            sys.exit(1)
-    else:
+    if color != True:
         colored = nt_colored
 
     if caller.connectionTest() == False:
