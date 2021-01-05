@@ -8,7 +8,7 @@ import time
 import math
 import requests
 from termcolor import colored
-from __init__ import __version__
+from octoprint_cli import __version__
 
 config = configparser.ConfigParser()
 parser = argparse.ArgumentParser(prog="octoprint-cli", description="Command line tool for controlling OctoPrint 3D printer servers", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -147,12 +147,16 @@ com_version.set_defaults(func=version)
 
 def continuous(args):
     def tempPrint():
+        lines = 0
         print(colored("Temperature Status", attrs=['bold','underline']))
         data2 = caller.get('/api/printer')
         print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
         print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
-        print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
-        print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
+        lines += 3
+        if 'bed' in data2['temperature'].keys():
+            print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+            print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
+            lines += 2
     def jobPrint():
         data = caller.get('/api/job')
         print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
@@ -183,36 +187,36 @@ def continuous(args):
                 data = caller.get('/api/job')
                 jobPrint()
                 print()
-                tempPrint()
+                lines+=tempPrint()
                 print()
                 print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil((100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'],2))+"% Complete")
-                lines+=13
+                lines+=8
             if caller.getState() == 'Paused':
                 data = caller.get('/api/job')
                 print(colored('Paused', 'yellow', attrs=['bold']))
                 jobPrint()
                 print()
-                tempPrint()
+                lines+=tempPrint()
                 print()
                 print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil((100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'],2))+"% Complete")
-                lines+=13
+                lines+=8
             if caller.getState() == 'Pausing':
                 data = caller.get('/api/job')
                 print(colored('Pausing', 'yellow', attrs=['bold']))
                 jobPrint()
                 print()
-                tempPrint()
+                lines+=tempPrint()
                 print()
                 print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil((100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'],2))+"% Complete")
-                lines+=13
+                lines+=8
             if caller.getState() == 'Cancelling':
                 data = caller.get('/api/job')
                 print(colored('Cancelling', 'red', attrs=['bold']))
                 print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
                 print(colored("Estimated Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
                 print()
-                tempPrint()
-                lines+=9
+                lines+=tempPrint()
+                lines+=4
 
             time.sleep(3)
             sys.stdout.write("\033[F\033[K"*lines)
@@ -273,8 +277,9 @@ def print_status(args):
         def tempPrint():
             print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
             print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
-            print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
-            print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
+            if 'bed' in data2['temperature'].keys():
+                print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+                print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
         def jobPrint():
             print(colored("File: ", attrs=['bold']) + data['job']['file']['name'])
             print(colored("Estimated Total Print Time: ", attrs=['bold']) + caller.getTotalTime())
@@ -468,8 +473,9 @@ def temp_status(args):
     if isinstance(data, dict):
         print(colored("Extruder Temp: ", attrs=['bold'])+str(data['temperature']['tool0']['actual'])+"°C")
         print(colored("Extruder Target: ", attrs=['bold'])+str(data['temperature']['tool0']['target'])+"°C")
-        print(colored("Bed Temp: ", attrs=['bold'])+str(data['temperature']['bed']['actual'])+"°C")
-        print(colored("Bed Target: ", attrs=['bold'])+str(data['temperature']['bed']['target'])+"°C")
+        if 'bed' in data['temperature'].keys():
+            print(colored("Bed Temp: ", attrs=['bold'])+str(data['temperature']['bed']['actual'])+"°C")
+            print(colored("Bed Target: ", attrs=['bold'])+str(data['temperature']['bed']['target'])+"°C")
 
 com_temp_status = coms_temp.add_parser('status', description='view temperature status of extruder and print bed', help='view temperature status of extruder and print bed')
 com_temp_status.set_defaults(func=temp_status)
@@ -508,7 +514,7 @@ def temp_bed(args):
         print(colored("Bed temp set to " + str(args.temperature)+"°C", 'green', attrs=['bold']))
         sys.exit(0)
     elif code == 409:
-        print(colored("Printer is not operational", 'red', attrs=['bold']))
+        print(colored("Printer is not operational or bed is unavailable", 'red', attrs=['bold']))
         sys.exit(1)
     else:
         print(colored("Unable to change temperature", 'red', attrs=['bold']))
