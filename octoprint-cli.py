@@ -2,7 +2,6 @@
 import argparse
 import configparser
 import os
-from api import api
 import sys
 import datetime
 import time
@@ -23,6 +22,98 @@ subparsers = parser.add_subparsers()
 caller = None
 destination = None
 key = None
+
+class api:
+    address = ""
+    XapiKey = ""
+    header = {}
+
+    def __init__(self, key, destination):
+        """api caller constructor method"""
+        self.address = destination
+        self.XapiKey = key
+        self.header['X-API-Key']=key
+
+    def get(self, target):
+        request = requests.get(self.address+target, headers=self.header)
+        if request.status_code != 200:
+            return request.status_code
+        return request.json()
+
+    def post(self, target, data):
+        request = requests.post(self.address+target, headers=self.header, json=(data))
+        return request.status_code
+
+    def connectionTest(self):
+        try:
+            if isinstance(self.get("/api/version"),dict):
+                return True
+            else:
+                return False
+        except requests.ConnectionError:
+            return False
+
+    def authTest(self):
+        if isinstance(self.get("/api/job"),dict):
+            return True
+        else:
+            return False
+
+    def getVersionInfo(self):
+        return self.get("/api/version")
+
+    def getState(self):
+        return self.get("/api/job")['state']
+
+    def getFile(self):
+        return self.get("/api/job")['job']['file']['name']
+
+    def getProgress(self):
+        return self.get("/api/job")['progress']['completion']
+
+    def getTimeLeft(self):
+        time = self.get("/api/job")['progress']['printTimeLeft']
+        hours = int(time//3600)
+        if len(str(hours))==1:
+            hours = "0"+str(hours)
+        time = time%3600
+        minutes = int(time//60)
+        time = int(time%60)
+        if len(str(minutes))==1:
+            minutes = "0"+str(minutes)
+        time = int(time%60)
+        if len(str(time))==1:
+            time = "0"+str(time)
+        return str(hours)+":"+str(minutes)+":"+str(time)
+
+    def getTotalTime(self):
+        time = self.get("/api/job")['job']['estimatedPrintTime']
+        hours = int(time//3600)
+        if len(str(hours))==1:
+            hours = "0"+str(hours)
+        time = time%3600
+        minutes = int(time//60)
+        time = int(time%60)
+        if len(str(minutes))==1:
+            minutes = "0"+str(minutes)
+        return str(hours)+":"+str(minutes)
+
+    def selectFile(self, fileName):
+        return self.post("/api/files/local/"+fileName, {'command':'select'})
+
+    def printRequests(self, command):
+        return self.post("/api/job", {'command':command})
+
+    def pauseRequests(self, action):
+        return self.post("/api/job", {'command':'pause', 'action':action})
+
+    def fileUpload(self, file):
+        fle = {'file':open(file,'rb'), 'filename':file}
+        request = requests.post(self.address+"/api/files/local", headers=self.header, files=fle)
+        if request.status_code == 201:
+            return request.json()
+        return request.status_code
+
 
 def loadConfig(path):
     try:
@@ -607,57 +698,61 @@ com_files_upload.add_argument('path', type=str, help='path to local file to uplo
 
 opt_config = optionals.add_argument('-c', '--config', type=str, dest='config_path', action='store', help='custom path to config file')
 
-options = parser.parse_args()
+def main():
+    options = parser.parse_args()
 
-if options.config_path != None:
-    if loadConfig(options.config_path):
-        pass
+    if options.config_path != None:
+        if loadConfig(options.config_path):
+            pass
+        else:
+            print("Configuration file is not complete or does not exist")
+            sys.exit(1)
     else:
-        print("Configuration file is not complete or does not exist")
-        sys.exit(1)
-else:
-    if loadConfig(os.path.join(sys.path[0],'config.ini')):
-        pass
-    elif loadConfig(os.path.expanduser('~/.config/octoprint-cli.ini')):
-        pass
-    else:
-        print("Configuration file is not complete or does not exist")
-        sys.exit(1)
-init_config()
+        if loadConfig(os.path.join(sys.path[0],'config.ini')):
+            pass
+        elif loadConfig(os.path.expanduser('~/.config/octoprint-cli.ini')):
+            pass
+        else:
+            print("Configuration file is not complete or does not exist")
+            sys.exit(1)
+    init_config()
 
-def nt_colored(*args, attrs=None):
-    return args[0]
+    def nt_colored(*args, attrs=None):
+        return args[0]
 
 
-color = True #termcolor configuration
-if os.name=='nt':
-    colored = nt_colored
-    color = False
-try:
-    if config['preferences']['FormattedText'] == "false":
+    color = True #termcolor configuration
+    if os.name=='nt':
         colored = nt_colored
         color = False
-except KeyError:
-    pass
-if color == True:
     try:
-        from termcolor import colored
-    except ImportError:
-        print("termcolor module not installed")
+        if config['preferences']['FormattedText'] == "false":
+            colored = nt_colored
+            color = False
+    except KeyError:
+        pass
+    if color == True:
+        try:
+            from termcolor import colored
+        except ImportError:
+            print("termcolor module not installed")
+            sys.exit(1)
+    else:
+        colored = nt_colored
+
+    if caller.connectionTest() == False:
+        print(colored("OctoPrint server cannot be reached", 'red', attrs=['bold']))
         sys.exit(1)
-else:
-    colored = nt_colored
+    if caller.authTest() == False:
+        print(colored("X-API-Key is incorrect", 'red', attrs=['bold']))
+        sys.exit(1)
 
-if caller.connectionTest() == False:
-    print(colored("OctoPrint server cannot be reached", 'red', attrs=['bold']))
-    sys.exit(1)
-if caller.authTest() == False:
-    print(colored("X-API-Key is incorrect", 'red', attrs=['bold']))
-    sys.exit(1)
+    try:
+        options.func(options)
+    except AttributeError:
+        print(colored("Invalid or Missing Arguments", 'red', attrs=['bold']))
+        print(parser.format_help())
+        sys.exit(2)
 
-try:
-    options.func(options)
-except AttributeError:
-    print(colored("Invalid or Missing Arguments", 'red', attrs=['bold']))
-    print(parser.format_help())
-    sys.exit(2)
+if __name__ == "__main__":
+    main()
