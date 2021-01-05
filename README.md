@@ -2,7 +2,7 @@
 
 [![version](https://img.shields.io/badge/dynamic/json?color=blue&label=version&query=tag_name&url=https%3A%2F%2Fapi.github.com%2Frepos%2Fuserblackbox%2Foctoprint-cli%2Freleases%2Flatest&style=flat-square)](https://github.com/UserBlackBox/octoprint-cli/releases/latest) [![license](https://img.shields.io/badge/dynamic/json?color=brightgreen&label=license&query=license.key&url=https%3A%2F%2Fapi.github.com%2Frepos%2FUserBlackBox%2Foctoprint-cli&style=flat-square)](https://github.com/UserBlackBox/octoprint-cli/blob/master/LICENSE)
 
-![icon](icon/icon.png)
+![icon](https://raw.githubusercontent.com/UserBlackBox/octoprint-cli/master/icon/icon.png)
 
 Python 3 command line tool for controlling OctoPrint servers
 
