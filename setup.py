@@ -26,5 +26,5 @@ setup(
         "Environment :: Console"
     ],
     python_requires='>=3.6',
-    install_requires=['requests>=2.25.1', 'termcolor>=1.1.0']
+    install_requires=['requests>=2.23.0', 'termcolor>=1.1.0']
 )
