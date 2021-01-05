@@ -8,6 +8,7 @@ import time
 import math
 import requests
 from termcolor import colored
+from __init__ import __version__
 
 config = configparser.ConfigParser()
 parser = argparse.ArgumentParser(prog="octoprint-cli", description="Command line tool for controlling OctoPrint 3D printer servers", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -710,6 +711,19 @@ def main():
             print("Configuration file is not complete or does not exist")
             sys.exit(1)
     init_config()
+
+    def updateCheck():
+        request = requests.get('https://api.github.com/repos/UserBlackBox/octoprint-cli/releases/latest')
+        if request.status_code == 200:
+            v = lambda t: tuple(map(int,t.split('.')))
+            if v(request.json()['tag_name'][1:]) > v(__version__):
+                print("octoprint-cli can be updated using pip")
+
+    try:
+        if config['preferences']['UpdateCheck'] == 'true':
+            updateCheck()
+    except KeyError:
+        updateCheck()
 
     def nt_colored(*args, attrs=None):
         return args[0]
