@@ -37,6 +37,23 @@ Colored and formatted text is not available on Windows systems due to the lack o
 
 The program requires the API key to have all permissions to run
 
+
+## Installation
+
+octoprint-cli can be installed from PyPI using `pip`. PyPI package can be found at https://pypi.org/project/octoprint-cli/
+
+```bash
+pip install octoprint-cli
+```
+
+octoprint-cli can also be installed manually using `git` and `setup.py`
+
+```bash
+git clone https://github.com/UserBlackBox/octoprint-cli.git
+cd octoprint-cli
+python3 setup.py install --user
+```
+
 ## Dependencies
 
 Can be found in `requirements.txt` and installed with `pip`
