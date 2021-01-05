@@ -5,11 +5,11 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="octoprint-cli",
-    packages=find_packages,
+    packages=find_packages(),
     version="3.1.0",
     entry_points={
         "console_scripts": [
-            "octoprint-cli=octoprint-cli.__main__:main"
+            "octoprint-cli=octoprint_cli.__main__:main"
         ]
     },
     author="Ivy Fan-Chiang",
@@ -22,7 +22,8 @@ setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: OS Independent",
-        "Natural Language :: English"
+        "Natural Language :: English",
+        "Environment :: Console"
     ],
     python_requires='>=3.6'
 )
