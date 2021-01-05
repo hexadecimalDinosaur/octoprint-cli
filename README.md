@@ -37,7 +37,6 @@ Colored and formatted text is not available on Windows systems due to the lack o
 
 The program requires the API key to have all permissions to run
 
-
 ## Installation
 
 octoprint-cli can be installed from PyPI using `pip`. PyPI package can be found at https://pypi.org/project/octoprint-cli/
@@ -76,6 +75,8 @@ ApiKey = API_KEY_HERE
 [preferences]
 ;Set if the program uses colored or formatted text, this setting is turned off on windows due to cmd and powershell limitations
 FormattedText = true
+;Set if the program should check for updates
+UpdateCheck = true
 
 [printer]
 ;Set maximum temperature that printer can be set to
