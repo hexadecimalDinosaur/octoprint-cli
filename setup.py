@@ -25,5 +25,6 @@ setup(
         "Natural Language :: English",
         "Environment :: Console"
     ],
-    python_requires='>=3.6'
+    python_requires='>=3.6',
+    install_requires=['requests>=2.25.1', 'termcolor>=1.1.0']
 )
