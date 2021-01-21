@@ -100,7 +100,7 @@ def continuous(args):
                 lines+=tempPrint()
                 print()
                 print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil((100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'],2))+"% Complete")
-                lines+=8
+                lines+=7
             if caller.getState() == 'Paused':
                 data = caller.get('/api/job')
                 print(colored('Paused', 'yellow', attrs=['bold']))
@@ -109,7 +109,7 @@ def continuous(args):
                 lines+=tempPrint()
                 print()
                 print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil((100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'],2))+"% Complete")
-                lines+=8
+                lines+=7
             if caller.getState() == 'Pausing':
                 data = caller.get('/api/job')
                 print(colored('Pausing', 'yellow', attrs=['bold']))
@@ -118,7 +118,7 @@ def continuous(args):
                 lines+=tempPrint()
                 print()
                 print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil((100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'],2))+"% Complete")
-                lines+=8
+                lines+=7
             if caller.getState() == 'Cancelling':
                 data = caller.get('/api/job')
                 print(colored('Cancelling', 'red', attrs=['bold']))
