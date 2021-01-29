@@ -631,7 +631,7 @@ def main():
     def updateCheck():
         request = requests.get('https://api.github.com/repos/UserBlackBox/octoprint-cli/releases/latest')
         if request.status_code == 200:
-            v = lambda t: tuple(map(int,t.split('.')))
+            v = lambda t: tuple(map(int,t.split('-')[0].split('.')))
             if v(request.json()['tag_name'][1:]) > v(__version__):
                 print("octoprint-cli can be updated using pip")
 
