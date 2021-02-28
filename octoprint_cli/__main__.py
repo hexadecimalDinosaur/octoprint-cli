@@ -95,12 +95,13 @@ def continuous(args):
                 lines+=6
             if caller.getState() == 'Printing':
                 data = caller.get('/api/job')
+                print(colored('Printing', 'green', attrs=['bold']))
                 jobPrint()
                 print()
                 lines+=tempPrint()
                 print()
                 print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil((100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'],2))+"% Complete")
-                lines+=7
+                lines+=8
             if caller.getState() == 'Paused':
                 data = caller.get('/api/job')
                 print(colored('Paused', 'yellow', attrs=['bold']))
