@@ -12,12 +12,14 @@ from octoprint_cli import __version__
 from octoprint_cli.api import api
 
 config = configparser.ConfigParser()
-parser = argparse.ArgumentParser(prog="octoprint-cli", description="Command line tool for controlling OctoPrint 3D printer servers", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser = argparse.ArgumentParser(prog="octoprint-cli", description="Command line tool for controlling OctoPrint 3D printer servers",
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 optionals = parser.add_argument_group()
 subparsers = parser.add_subparsers()
 caller = None
 destination = None
 key = None
+
 
 def loadConfig(path):
     try:
@@ -33,101 +35,125 @@ def loadConfig(path):
     except FileNotFoundError:
         return False
 
+
 def init_config():
     global destination
     global key
     destination = config['server']['ServerAddress']
     key = config['server']['ApiKey']
 
-    if not(destination.startswith('http://') or destination.startswith('https://')): #add http if missing
+    if not(destination.startswith('http://') or destination.startswith('https://')):  # add http if missing
         destination = "http://" + destination
-    if destination.endswith('/'): #remove trailing slash
+    if destination.endswith('/'):  # remove trailing slash
         destination = destination[:-1]
     global caller
-    caller = api(key,destination)
+    caller = api(key, destination)
+
 
 def version(args):
-    data=caller.getVersionInfo()
+    data = caller.getVersionInfo()
     print("OctoPrint v" + data['server'] + " - API v" + data['api'])
     sys.exit(0)
 
-com_version = subparsers.add_parser('version', description='get OctoPrint version', help='get OctoPrint version')
+
+com_version = subparsers.add_parser(
+    'version', description='get OctoPrint version', help='get OctoPrint version')
 com_version.set_defaults(func=version)
+
 
 def continuous(args):
     def tempPrint():
         lines = 0
-        print(colored("Temperature Status", attrs=['bold','underline']))
+        print(colored("Temperature Status", attrs=['bold', 'underline']))
         data2 = caller.get('/api/printer')
-        print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
-        print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
+        print(colored("Extruder Temp: ", attrs=[
+              'bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+        print(colored("Extruder Target: ", attrs=[
+              'bold']) + str(data2['temperature']['tool0']['target'])+"°C")
         lines += 3
         if 'bed' in data2['temperature'].keys():
-            print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
-            print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
+            print(colored("Bed Temp: ", attrs=[
+                  'bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+            print(colored("Bed Target: ", attrs=[
+                  'bold']) + str(data2['temperature']['bed']['target'])+"°C")
             lines += 2
         return lines
+
     def jobPrint():
         data = caller.get('/api/job')
-        print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
-        print(colored("Progress: ", attrs=['bold'])+str(round(data['progress']['completion'],2))+"%")
-        print(colored("Estimated Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
-        print(colored("Print Time Left: ", attrs=['bold'])+str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
+        print(colored("Loaded File: ", attrs=[
+              'bold']) + data['job']['file']['name'])
+        print(colored("Progress: ", attrs=[
+              'bold'])+str(round(data['progress']['completion'], 2))+"%")
+        print(colored("Estimated Print Time: ", attrs=['bold']) + str(
+            datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
+        print(colored("Print Time Left: ", attrs=[
+              'bold'])+str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
     try:
         while True:
             lines = 0
             if not(caller.getState() in ('Operational', 'Printing', 'Paused', 'Pausing', 'Cancelling')):
-                print(colored(caller.getState(),'red',attrs=['bold']))
+                print(colored(caller.getState(), 'red', attrs=['bold']))
                 data = caller.get('/api/connection')
-                print(colored("Printer Profile: ", attrs=['bold']) + data['options']['printerProfiles'][0]['name'])
-                print(colored("Port: ", attrs=['bold']) + str(data['current']['port']))
-                print(colored("Baudrate: ", attrs=['bold']) + str(data['current']['baudrate']))
+                print(colored("Printer Profile: ", attrs=[
+                      'bold']) + data['options']['printerProfiles'][0]['name'])
+                print(colored("Port: ", attrs=[
+                      'bold']) + str(data['current']['port']))
+                print(colored("Baudrate: ", attrs=[
+                      'bold']) + str(data['current']['baudrate']))
                 lines = 4
             if caller.getState() == 'Operational':
                 data = caller.get('/api/job')
                 print(colored('Printer Operational', 'green', attrs=['bold']))
                 if data['job']['file']['name']:
-                    print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
-                    print(colored("Estimated Print Time: ", attrs=['bold']) + caller.getTotalTime())
+                    print(colored("Loaded File: ", attrs=[
+                          'bold']) + data['job']['file']['name'])
+                    print(colored("Estimated Print Time: ",
+                                  attrs=['bold']) + caller.getTotalTime())
                     print()
-                    lines+=3
+                    lines += 3
                 tempPrint()
-                lines+=6
+                lines += 6
             if caller.getState() == 'Printing':
                 data = caller.get('/api/job')
                 print(colored('Printing', 'green', attrs=['bold']))
                 jobPrint()
                 print()
-                lines+=tempPrint()
+                lines += tempPrint()
                 print()
-                print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil((100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'],2))+"% Complete")
-                lines+=8
+                print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil(
+                    (100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'], 2))+"% Complete")
+                lines += 8
             if caller.getState() == 'Paused':
                 data = caller.get('/api/job')
                 print(colored('Paused', 'yellow', attrs=['bold']))
                 jobPrint()
                 print()
-                lines+=tempPrint()
+                lines += tempPrint()
                 print()
-                print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil((100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'],2))+"% Complete")
-                lines+=7
+                print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil(
+                    (100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'], 2))+"% Complete")
+                lines += 7
             if caller.getState() == 'Pausing':
                 data = caller.get('/api/job')
                 print(colored('Pausing', 'yellow', attrs=['bold']))
                 jobPrint()
                 print()
-                lines+=tempPrint()
+                lines += tempPrint()
                 print()
-                print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil((100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'],2))+"% Complete")
-                lines+=7
+                print("Progress: |"+("#"*math.floor(data['progress']['completion']/5))+("—"*math.ceil(
+                    (100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'], 2))+"% Complete")
+                lines += 7
             if caller.getState() == 'Cancelling':
                 data = caller.get('/api/job')
                 print(colored('Cancelling', 'red', attrs=['bold']))
-                print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
-                print(colored("Estimated Print Time: ", attrs=['bold']) + str(datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
+                print(colored("Loaded File: ", attrs=[
+                      'bold']) + data['job']['file']['name'])
+                print(colored("Estimated Print Time: ", attrs=['bold']) + str(
+                    datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
                 print()
-                lines+=tempPrint()
-                lines+=4
+                lines += tempPrint()
+                lines += 4
 
             time.sleep(3)
             sys.stdout.write("\033[F\033[K"*lines)
@@ -135,72 +161,100 @@ def continuous(args):
         print(colored("Continuous output terminated", attrs=['bold']))
         sys.exit(0)
 
-com_continuous = subparsers.add_parser('continuous', description='get continuous refreshing status with temperature information and progress information', help='get continuous refreshing status with temperature information and progress information')
+
+com_continuous = subparsers.add_parser('continuous', description='get continuous refreshing status with temperature information and progress information',
+                                       help='get continuous refreshing status with temperature information and progress information')
 com_continuous.set_defaults(func=continuous)
 
+
 def layers(args):
-    data=caller.get("/plugin/DisplayLayerProgress/values")
-    if data==404:
-        print(colored("The DisplayLayerProgress is not installed or enabled on the OctoPrint server", 'red', attrs=['bold']))
+    data = caller.get("/plugin/DisplayLayerProgress/values")
+    if data == 404:
+        print(colored(
+            "The DisplayLayerProgress is not installed or enabled on the OctoPrint server", 'red', attrs=['bold']))
         sys.exit(1)
     elif isinstance(data, dict) and caller.getState() in ('Printing', 'Paused', 'Pausing', 'Finishing'):
-        print(colored("Current Layer: ", 'white', attrs=['bold'])+data['layer']['current']+"/"+data['layer']['total'])
-        print(colored("Current Height: ", 'white', attrs=['bold'])+data['height']['current']+'/'+data['height']['totalFormatted']+'mm')
-        print(colored("Average Layer Duration: ", 'white', attrs=['bold'])+data['layer']['averageLayerDuration'].replace('h','').replace('s','').replace('m',''))
-        print(colored("Last Layer Duration: ", 'white', attrs=['bold'])+data['layer']['lastLayerDuration'].replace('h','').replace('s','').replace('m',''))
+        print(colored("Current Layer: ", 'white', attrs=[
+              'bold'])+data['layer']['current']+"/"+data['layer']['total'])
+        print(colored("Current Height: ", 'white', attrs=[
+              'bold'])+data['height']['current']+'/'+data['height']['totalFormatted']+'mm')
+        print(colored("Average Layer Duration: ", 'white', attrs=[
+              'bold'])+data['layer']['averageLayerDuration'].replace('h', '').replace('s', '').replace('m', ''))
+        print(colored("Last Layer Duration: ", 'white', attrs=[
+              'bold'])+data['layer']['lastLayerDuration'].replace('h', '').replace('s', '').replace('m', ''))
         sys.exit(0)
     else:
-        print(colored('Unable to retreive layer information', 'red', attrs=['bold']))
+        print(colored('Unable to retreive layer information',
+                      'red', attrs=['bold']))
         sys.exit(1)
 
-com_layers = subparsers.add_parser('layers', description='get layer information from the DisplayLayerProgress plugin', help='get layer information from the DisplayLayerProgress plugin')
+
+com_layers = subparsers.add_parser('layers', description='get layer information from the DisplayLayerProgress plugin',
+                                   help='get layer information from the DisplayLayerProgress plugin')
 com_layers.set_defaults(func=layers)
+
 
 def gcode(args):
     command = args.command
-    request = caller.post('/api/printer/command', {'command':command})
+    request = caller.post('/api/printer/command', {'command': command})
     if request != 204:
         print(colored('G-code execution failed', 'red', attrs=['bold']))
         sys.exit(1)
     sys.exit(0)
 
-com_gcode = subparsers.add_parser('gcode', description='run gcode on printer', help='run gcode on printer')
+
+com_gcode = subparsers.add_parser(
+    'gcode', description='run gcode on printer', help='run gcode on printer')
 com_gcode.add_argument('command', type=str, help='gcode command')
 com_gcode.set_defaults(func=gcode)
 
-com_print = subparsers.add_parser('print', description='print job commands', help='print job commands')
+com_print = subparsers.add_parser(
+    'print', description='print job commands', help='print job commands')
 coms_print = com_print.add_subparsers()
+
 
 def print_status(args):
     state = caller.getState()
-    if state == 'Offline': #printer disconnected
+    if state == 'Offline':  # printer disconnected
         print(colored("Printer Disconnected", 'red', attrs=['bold']))
-    elif state.startswith('Offline'): #Offline status with error message following
+    elif state.startswith('Offline'):  # Offline status with error message following
         print(colored("Printer Disconnected", 'red', attrs=['bold']))
         print(state)
-    elif state.startswith('Error'): #Error status
+    elif state.startswith('Error'):  # Error status
         print(colored("Error", 'red', attrs=['bold']))
         print(colored("Error: ", attrs=['bold'])+state[7:])
     else:
         selectedFile = caller.getFile()
         data = caller.get("/api/job")
         data2 = caller.get("/api/printer")
+
         def tempPrint():
-            print(colored("Extruder Temp: ", attrs=['bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
-            print(colored("Extruder Target: ", attrs=['bold']) + str(data2['temperature']['tool0']['target'])+"°C")
+            print(colored("Extruder Temp: ", attrs=[
+                  'bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
+            print(colored("Extruder Target: ", attrs=[
+                  'bold']) + str(data2['temperature']['tool0']['target'])+"°C")
             if 'bed' in data2['temperature'].keys():
-                print(colored("Bed Temp: ", attrs=['bold']) + str(data2['temperature']['bed']['actual'])+"°C")
-                print(colored("Bed Target: ", attrs=['bold']) + str(data2['temperature']['bed']['target'])+"°C")
+                print(colored("Bed Temp: ", attrs=[
+                      'bold']) + str(data2['temperature']['bed']['actual'])+"°C")
+                print(colored("Bed Target: ", attrs=[
+                      'bold']) + str(data2['temperature']['bed']['target'])+"°C")
+
         def jobPrint():
-            print(colored("File: ", attrs=['bold']) + data['job']['file']['name'])
-            print(colored("Estimated Total Print Time: ", attrs=['bold']) + caller.getTotalTime())
-            print(colored("Estimated Print Time Left: ", attrs=['bold']) + caller.getTimeLeft())
-            print(colored("Progress: ", attrs=['bold']) + str(round(data['progress']['completion']))+"%")
+            print(colored("File: ", attrs=['bold']
+                          ) + data['job']['file']['name'])
+            print(colored("Estimated Total Print Time: ",
+                          attrs=['bold']) + caller.getTotalTime())
+            print(colored("Estimated Print Time Left: ",
+                          attrs=['bold']) + caller.getTimeLeft())
+            print(colored("Progress: ", attrs=[
+                  'bold']) + str(round(data['progress']['completion']))+"%")
 
         if state == 'Operational' and selectedFile:
             print(colored("Printer Operational", 'green', attrs=['bold']))
-            print(colored("Loaded File: ", attrs=['bold']) + data['job']['file']['name'])
-            print(colored("Estimated Print Time: ", attrs=['bold']) + caller.getTotalTime())
+            print(colored("Loaded File: ", attrs=[
+                  'bold']) + data['job']['file']['name'])
+            print(colored("Estimated Print Time: ",
+                          attrs=['bold']) + caller.getTotalTime())
             tempPrint()
         elif state == 'Operational':
             print(colored("Printer Operational", 'green', attrs=['bold']))
@@ -219,7 +273,8 @@ def print_status(args):
             tempPrint()
         elif state == 'Cancelling':
             print(colored("Cancelling", 'red', attrs=['bold']))
-            print(colored("File: ", attrs=['bold']) + data['job']['file']['name'])
+            print(colored("File: ", attrs=['bold']
+                          ) + data['job']['file']['name'])
             tempPrint()
         elif state == 'Finishing':
             print(colored("Finishing", 'green', attrs=['bold']))
@@ -227,8 +282,11 @@ def print_status(args):
             tempPrint()
     sys.exit(0)
 
-com_print_status = coms_print.add_parser('status', description='view print job status', help='view print job status')
+
+com_print_status = coms_print.add_parser(
+    'status', description='view print job status', help='view print job status')
 com_print_status.set_defaults(func=print_status)
+
 
 def print_select(args):
     path = args.path
@@ -245,9 +303,12 @@ def print_select(args):
         print(colored('Unable to select file'))
         sys.exit(1)
 
-com_print_select = coms_print.add_parser('select', description='select file on server to load', help='select file on server to load')
+
+com_print_select = coms_print.add_parser(
+    'select', description='select file on server to load', help='select file on server to load')
 com_print_select.set_defaults(func=print_select)
 com_print_select.add_argument('path')
+
 
 def print_start(args):
     if caller.getFile() == None:
@@ -261,11 +322,14 @@ def print_start(args):
         print(colored("Unable to print", 'red', attrs=['bold']))
         sys.exit(1)
     elif code == 204:
-        print(colored("Starting print",'green',attrs=['bold']))
+        print(colored("Starting print", 'green', attrs=['bold']))
         sys.exit(0)
 
-com_print_start = coms_print.add_parser('start', description='start print job on selected file', help='start print job on selected file')
+
+com_print_start = coms_print.add_parser(
+    'start', description='start print job on selected file', help='start print job on selected file')
 com_print_start.set_defaults(func=print_start)
+
 
 def print_cancel(args):
     code = caller.printRequests('cancel')
@@ -279,8 +343,11 @@ def print_cancel(args):
         print(colored('Unable to cancel', 'red', attrs=['bold']))
         sys.exit(1)
 
-com_print_cancel = coms_print.add_parser('cancel', description='cancel current print job', help='cancel current print job')
+
+com_print_cancel = coms_print.add_parser(
+    'cancel', description='cancel current print job', help='cancel current print job')
 com_print_cancel.set_defaults(func=print_cancel)
+
 
 def print_pause(args):
     code = caller.pauseRequests('pause')
@@ -294,8 +361,11 @@ def print_pause(args):
         print(colored('Unable to pause', 'red', attrs=['bold']))
         sys.exit(1)
 
-com_print_pause = coms_print.add_parser('pause', description='pause current print job', help='pause current print job')
+
+com_print_pause = coms_print.add_parser(
+    'pause', description='pause current print job', help='pause current print job')
 com_print_pause.set_defaults(func=print_pause)
+
 
 def print_resume(args):
     code = caller.pauseRequests('resume')
@@ -309,34 +379,47 @@ def print_resume(args):
         print(colored('Unable to resume', 'red', attrs=['bold']))
         sys.exit(1)
 
-com_print_resume = coms_print.add_parser('resume', description='resume current print job', help='resume current print job')
+
+com_print_resume = coms_print.add_parser(
+    'resume', description='resume current print job', help='resume current print job')
 com_print_resume.set_defaults(func=print_resume)
 
-com_connection = subparsers.add_parser('connection', description='printer connection commands', help='printer connection commands')
+com_connection = subparsers.add_parser(
+    'connection', description='printer connection commands', help='printer connection commands')
 coms_connections = com_connection.add_subparsers()
+
 
 def connection_status(args):
     data = caller.get('/api/connection')
     if data['current']['state'] in ('Printing', 'Operational'):
         print(colored(data['current']['state'], 'green', attrs=['bold']))
-        print(colored("Printer Profile: ", attrs=['bold']) + data['options']['printerProfiles'][0]['name'])
+        print(colored("Printer Profile: ", attrs=[
+              'bold']) + data['options']['printerProfiles'][0]['name'])
         print(colored("Port: ", attrs=['bold']) + data['current']['port'])
-        print(colored("Baudrate: ", attrs=['bold']) + str(data['current']['baudrate']))
-    elif data['current']['state'] == 'Closed': #disconnected
+        print(colored("Baudrate: ", attrs=[
+              'bold']) + str(data['current']['baudrate']))
+    elif data['current']['state'] == 'Closed':  # disconnected
         print(colored("Printer Disconnected", 'red', attrs=['bold']))
-        print(colored("Ports: ", attrs=['bold'])+",".join(data['options']['ports']))
-        print(colored("Baudrates: ", attrs=['bold'])+", ".join(list(map(str,data['options']['baudrates']))))
-    elif data['current']['state'].startswith("Error"): #connection error
+        print(colored("Ports: ", attrs=['bold']) +
+              ",".join(data['options']['ports']))
+        print(colored("Baudrates: ", attrs=[
+              'bold'])+", ".join(list(map(str, data['options']['baudrates']))))
+    elif data['current']['state'].startswith("Error"):  # connection error
         print(colored("Error", 'red', attrs=['bold']))
         print(colored("Error: ", attrs=['bold'])+data['current']['state'][7:])
-        print(colored("Ports: ", attrs=['bold'])+",".join(data['options']['ports']))
-        print(colored("Baudrates: ", attrs=['bold'])+", ".join(list(map(str,data['options']['baudrates']))))
+        print(colored("Ports: ", attrs=['bold']) +
+              ",".join(data['options']['ports']))
+        print(colored("Baudrates: ", attrs=[
+              'bold'])+", ".join(list(map(str, data['options']['baudrates']))))
 
-com_connection_status = coms_connections.add_parser('status', description='get printer connection status', help='get printer connection status')
+
+com_connection_status = coms_connections.add_parser(
+    'status', description='get printer connection status', help='get printer connection status')
 com_connection_status.set_defaults(func=connection_status)
 
+
 def connection_connect(args):
-    data = {'command':'connect', 'Content-Type':'application/json'}
+    data = {'command': 'connect', 'Content-Type': 'application/json'}
     if args.port:
         data['port'] = args.port
     if args.baudrate:
@@ -356,25 +439,35 @@ def connection_connect(args):
         print(colored("Unable to connect to printer", 'red', attrs=['bold']))
         sys.exit(1)
 
-com_connection_connect = coms_connections.add_parser('connect', description='connect to printer', help='connect to printer')
+
+com_connection_connect = coms_connections.add_parser(
+    'connect', description='connect to printer', help='connect to printer')
 com_connection_connect.set_defaults(func=connection_connect)
-com_connection_connect.add_argument('-p', '--port', type=str, dest='port', action='store', help='serial port')
-com_connection_connect.add_argument('-b', '--baudrate', type=int, dest='baudrate', action='store', help='connection baudrate')
+com_connection_connect.add_argument(
+    '-p', '--port', type=str, dest='port', action='store', help='serial port')
+com_connection_connect.add_argument(
+    '-b', '--baudrate', type=int, dest='baudrate', action='store', help='connection baudrate')
+
 
 def connection_disconnect(args):
-    code = caller.post("/api/connection", {"command":"disconnect"})
+    code = caller.post("/api/connection", {"command": "disconnect"})
     if code == 204:
         print("Printer disconnected")
         sys.exit(0)
     else:
-        print(colored("Unable to disconnect from printer", 'red', attrs=['bold']))
+        print(colored("Unable to disconnect from printer",
+                      'red', attrs=['bold']))
         sys.exit(1)
 
-com_connection_disconnect = coms_connections.add_parser('disconnect', description='disconnect from printer', help='disconnect from printer')
+
+com_connection_disconnect = coms_connections.add_parser(
+    'disconnect', description='disconnect from printer', help='disconnect from printer')
 com_connection_disconnect.set_defaults(func=connection_disconnect)
 
-com_temp = subparsers.add_parser('temp', description='printer temperature commands', help='printer temperature commands')
+com_temp = subparsers.add_parser(
+    'temp', description='printer temperature commands', help='printer temperature commands')
 coms_temp = com_temp.add_subparsers()
+
 
 def temp_status(args):
     data = caller.get("/api/printer")
@@ -382,25 +475,35 @@ def temp_status(args):
         print(colored("Printer is not operational", 'red', attrs=['bold']))
         sys.exit(1)
     if isinstance(data, dict):
-        print(colored("Extruder Temp: ", attrs=['bold'])+str(data['temperature']['tool0']['actual'])+"°C")
-        print(colored("Extruder Target: ", attrs=['bold'])+str(data['temperature']['tool0']['target'])+"°C")
+        print(colored("Extruder Temp: ", attrs=[
+              'bold'])+str(data['temperature']['tool0']['actual'])+"°C")
+        print(colored("Extruder Target: ", attrs=[
+              'bold'])+str(data['temperature']['tool0']['target'])+"°C")
         if 'bed' in data['temperature'].keys():
-            print(colored("Bed Temp: ", attrs=['bold'])+str(data['temperature']['bed']['actual'])+"°C")
-            print(colored("Bed Target: ", attrs=['bold'])+str(data['temperature']['bed']['target'])+"°C")
+            print(colored("Bed Temp: ", attrs=[
+                  'bold'])+str(data['temperature']['bed']['actual'])+"°C")
+            print(colored("Bed Target: ", attrs=[
+                  'bold'])+str(data['temperature']['bed']['target'])+"°C")
 
-com_temp_status = coms_temp.add_parser('status', description='view temperature status of extruder and print bed', help='view temperature status of extruder and print bed')
+
+com_temp_status = coms_temp.add_parser(
+    'status', description='view temperature status of extruder and print bed', help='view temperature status of extruder and print bed')
 com_temp_status.set_defaults(func=temp_status)
+
 
 def temp_extruder(args):
     try:
         if args.temperature > int(config['print']['MaxExtruderTemp']):
-            print(colored("Target temp is higher than the limit set in the configuration file", 'red', attrs=['bold']))
+            print(colored(
+                "Target temp is higher than the limit set in the configuration file", 'red', attrs=['bold']))
             sys.exit(2)
     except KeyError:
         pass
-    code = caller.post("/api/printer/tool", {'command':'target','targets':{'tool0':args.temperature}})
+    code = caller.post(
+        "/api/printer/tool", {'command': 'target', 'targets': {'tool0': args.temperature}})
     if code == 204:
-        print(colored("Extruder temp set to " + str(args.temperature)+"°C", 'green', attrs=['bold']))
+        print(colored("Extruder temp set to " +
+                      str(args.temperature)+"°C", 'green', attrs=['bold']))
         sys.exit(0)
     elif code == 409:
         print(colored("Printer is not operational", 'red', attrs=['bold']))
@@ -409,93 +512,123 @@ def temp_extruder(args):
         print(colored("Unable to change temperature", 'red', attrs=['bold']))
         sys.exit(1)
 
-com_temp_extruder = coms_temp.add_parser('extruder', description='set extruder target temperature', help='set extruder target temperature')
+
+com_temp_extruder = coms_temp.add_parser(
+    'extruder', description='set extruder target temperature', help='set extruder target temperature')
 com_temp_extruder.set_defaults(func=temp_extruder)
-com_temp_extruder.add_argument('temperature', type=int, help='target temperature, if set to 0 the extruder will be turned off')
+com_temp_extruder.add_argument(
+    'temperature', type=int, help='target temperature, if set to 0 the extruder will be turned off')
+
 
 def temp_bed(args):
     try:
         if args.temperature > int(config['print']['MaxBedTemp']):
-            print(colored("Target temp is higher than the limit set in the configuration file", 'red', attrs=['bold']))
+            print(colored(
+                "Target temp is higher than the limit set in the configuration file", 'red', attrs=['bold']))
             sys.exit(2)
     except KeyError:
         pass
-    code = caller.post("/api/printer/bed", {'command':'target','target':args.temperature})
+    code = caller.post("/api/printer/bed",
+                       {'command': 'target', 'target': args.temperature})
     if code == 204:
-        print(colored("Bed temp set to " + str(args.temperature)+"°C", 'green', attrs=['bold']))
+        print(colored("Bed temp set to " + str(args.temperature) +
+                      "°C", 'green', attrs=['bold']))
         sys.exit(0)
     elif code == 409:
-        print(colored("Printer is not operational or bed is unavailable", 'red', attrs=['bold']))
+        print(colored("Printer is not operational or bed is unavailable",
+                      'red', attrs=['bold']))
         sys.exit(1)
     else:
         print(colored("Unable to change temperature", 'red', attrs=['bold']))
         sys.exit(1)
 
-com_temp_bed = coms_temp.add_parser('bed', description='set print bed target temperature', help='set print bed target temperature')
-com_temp_bed.set_defaults(func=temp_bed)
-com_temp_bed.add_argument('temperature', type=int, help='target temperature, if set to 0 the bed will be turned off')
 
-com_system = subparsers.add_parser('system', description='server management commands', help='server management commands')
+com_temp_bed = coms_temp.add_parser(
+    'bed', description='set print bed target temperature', help='set print bed target temperature')
+com_temp_bed.set_defaults(func=temp_bed)
+com_temp_bed.add_argument('temperature', type=int,
+                          help='target temperature, if set to 0 the bed will be turned off')
+
+com_system = subparsers.add_parser(
+    'system', description='server management commands', help='server management commands')
 coms_system = com_system.add_subparsers()
 
+
 def system_restart(args):
-    prompt = input(colored("You are restarting the server. Are you sure you wish to continue?",attrs=['bold'])+" [Y/n]: ")
+    prompt = input(colored(
+        "You are restarting the server. Are you sure you wish to continue?", attrs=['bold'])+" [Y/n]: ")
     if not(prompt.lower() == "y" or prompt.lower == "yes"):
         sys.exit(0)
-    code = caller.post("/api/system/commands/core/restart",{})
+    code = caller.post("/api/system/commands/core/restart", {})
     if code != 204:
-        print(colored("Unable to restart",'red',attrs=['bold']))
+        print(colored("Unable to restart", 'red', attrs=['bold']))
         sys.exit(1)
     else:
         print("OctoPrint is restarting")
 
-com_system_restart = coms_system.add_parser('restart', description='restart OctoPrint server', help='restart OctoPrint server')
+
+com_system_restart = coms_system.add_parser(
+    'restart', description='restart OctoPrint server', help='restart OctoPrint server')
 com_system_restart.set_defaults(func=system_restart)
 
+
 def system_restart_safe(args):
-    prompt = input(colored("You are restarting the server to safe mode. Are you sure you wish to continue?",attrs=['bold'])+" [Y/n]: ")
+    prompt = input(colored(
+        "You are restarting the server to safe mode. Are you sure you wish to continue?", attrs=['bold'])+" [Y/n]: ")
     if not(prompt.lower() == "y" or prompt.lower == "yes"):
         sys.exit(0)
-    code = caller.post("/api/system/commands/core/restart_safe",{})
+    code = caller.post("/api/system/commands/core/restart_safe", {})
     if code != 204:
-        print(colored("Unable to restart",'red',attrs=['bold']))
+        print(colored("Unable to restart", 'red', attrs=['bold']))
         sys.exit(1)
     else:
         print("OctoPrint is restarting to safe mode")
 
-com_system_restart_safe = coms_system.add_parser('restart-safe', description='restart OctoPrint server to safe mode', help='restart OctoPrint server to safe mode')
+
+com_system_restart_safe = coms_system.add_parser(
+    'restart-safe', description='restart OctoPrint server to safe mode', help='restart OctoPrint server to safe mode')
 com_system_restart_safe.set_defaults(func=system_restart_safe)
 
+
 def system_reboot(args):
-    prompt = input(colored("You are rebooting the server. Are you sure you wish to continue?",attrs=['bold'])+" [Y/n]: ")
+    prompt = input(colored(
+        "You are rebooting the server. Are you sure you wish to continue?", attrs=['bold'])+" [Y/n]: ")
     if not(prompt.lower() == "y" or prompt.lower == "yes"):
         sys.exit(0)
-    code = caller.post("/api/system/commands/core/reboot",{})
+    code = caller.post("/api/system/commands/core/reboot", {})
     if code != 204:
-        print(colored("Unable to reboot",'red',attrs=['bold']))
+        print(colored("Unable to reboot", 'red', attrs=['bold']))
         sys.exit(1)
     else:
         print("Server is rebooting")
 
-com_system_reboot = coms_system.add_parser('reboot', description='reboot OctoPrint server', help='reboot OctoPrint server')
+
+com_system_reboot = coms_system.add_parser(
+    'reboot', description='reboot OctoPrint server', help='reboot OctoPrint server')
 com_system_reboot.set_defaults(func=system_reboot)
 
+
 def system_shutdown(args):
-    prompt = input(colored("You are shutting down the server. Are you sure you wish to continue?",attrs=['bold'])+" [Y/n]: ")
+    prompt = input(colored(
+        "You are shutting down the server. Are you sure you wish to continue?", attrs=['bold'])+" [Y/n]: ")
     if not(prompt.lower() == "y" or prompt.lower == "yes"):
         sys.exit(0)
-    code = caller.post("/api/system/commands/core/shutdown",{})
+    code = caller.post("/api/system/commands/core/shutdown", {})
     if code != 204:
-        print(colored("Unable to shutdown",'red',attrs=['bold']))
+        print(colored("Unable to shutdown", 'red', attrs=['bold']))
         sys.exit(1)
     else:
         print("Server is shutting down")
 
-com_system_shutdown = coms_system.add_parser('shutdown', description='shutdown OctoPrint server', help='shutdown OctoPrint server')
+
+com_system_shutdown = coms_system.add_parser(
+    'shutdown', description='shutdown OctoPrint server', help='shutdown OctoPrint server')
 com_system_shutdown.set_defaults(func=system_shutdown)
 
-com_files = subparsers.add_parser('files', description='server file management commands', help='server file management commands')
+com_files = subparsers.add_parser(
+    'files', description='server file management commands', help='server file management commands')
 coms_files = com_files.add_subparsers()
+
 
 def files_list(args):
     container = 'files'
@@ -512,45 +645,64 @@ def files_list(args):
             sys.exit(1)
     else:
         data = caller.get("/api/files")
-    longestName=0
-    longestType=0
+    longestName = 0
+    longestType = 0
     folders = []
     files = []
     for i in data[container]:
-        if len(i['name']) > longestName: longestName = len(i['name'])
-        if len(i['type']) > longestType: longestType = len(i['type'])
+        if len(i['name']) > longestName:
+            longestName = len(i['name'])
+        if len(i['type']) > longestType:
+            longestType = len(i['type'])
         if i['type'] == 'folder':
             folders.append(i)
         else:
             files.append(i)
-    print(colored("NAME", attrs=['bold']) + (" "*longestName) + colored("TYPE", attrs=['bold']) + (" "*longestType) + colored("SIZE", attrs=['bold'])) #table headings
-    longestName+=4
-    longestType+=4
-    folders.sort(key=lambda e : e['name'])
-    files.sort(key=lambda e : e['name'])
+    print(colored("NAME", attrs=['bold']) + (" "*longestName) + colored("TYPE", attrs=[
+          'bold']) + (" "*longestType) + colored("SIZE", attrs=['bold']))  # table headings
+    longestName += 4
+    longestType += 4
+    folders.sort(key=lambda e: e['name'])
+    files.sort(key=lambda e: e['name'])
     if not args.files:
         for i in folders:
-            print(i['name'] + ((longestName-len(i['name']))*" ") + i['type'] + ((longestType-len(i['type']))*" "),end='')
+            print(i['name'] + ((longestName-len(i['name']))*" ") +
+                  i['type'] + ((longestType-len(i['type']))*" "), end='')
             try:
-                if i['type'] != 'folder': print(str(round(i['size']/1048576.0,2)) + " MB")
-                else: print()
-            except KeyError: print()
+                if i['type'] != 'folder':
+                    print(str(round(i['size']/1048576.0, 2)) + " MB")
+                else:
+                    print()
+            except KeyError:
+                print()
     if not args.folders:
         for i in files:
-            print(i['name'] + ((longestName-len(i['name']))*" ") + i['type'] + ((longestType-len(i['type']))*" "),end='')
+            print(i['name'] + ((longestName-len(i['name']))*" ") +
+                  i['type'] + ((longestType-len(i['type']))*" "), end='')
             try:
-                if i['type'] != 'folder': print(str(round(i['size']/1048576.0,2)) + " MB")
-                else: print()
-            except KeyError: print()
-    if container=='files': print(colored("\nFree space: ", attrs=['bold'])+str(round(data['free']/1073741824.0,3))+" GB") #disk space
+                if i['type'] != 'folder':
+                    print(str(round(i['size']/1048576.0, 2)) + " MB")
+                else:
+                    print()
+            except KeyError:
+                print()
+    if container == 'files':
+        print(colored("\nFree space: ", attrs=[
+              'bold'])+str(round(data['free']/1073741824.0, 3))+" GB")  # disk space
     sys.exit(0)
 
-com_files_list = coms_files.add_parser('list', description='list files from server', help='list files from server')
+
+com_files_list = coms_files.add_parser(
+    'list', description='list files from server', help='list files from server')
 com_files_list.set_defaults(func=files_list)
-com_files_list.add_argument('-p', '--path', type=str, dest='path', action='store', help='path for listing files from a folder')
+com_files_list.add_argument('-p', '--path', type=str, dest='path',
+                            action='store', help='path for listing files from a folder')
 com_files_list_filters = com_files_list.add_mutually_exclusive_group()
-com_files_list_filters.add_argument('--folders', help='show only folders', action='store_true')
-com_files_list_filters.add_argument('--files', help='show only files', action='store_true')
+com_files_list_filters.add_argument(
+    '--folders', help='show only folders', action='store_true')
+com_files_list_filters.add_argument(
+    '--files', help='show only files', action='store_true')
+
 
 def files_info(args):
     if args.path.startswith("/"):
@@ -560,30 +712,38 @@ def files_info(args):
         print(colored("File or folder not found", 'red', attrs=['bold']))
         sys.exit(1)
     print(colored("Name: ", attrs=['bold'])+data['name'])
-    print(colored("Path: ", attrs=['bold'])+data['refs']['resource'].replace(destination+'/api/files/local/',''))
+    print(colored("Path: ", attrs=['bold'])+data['refs']
+          ['resource'].replace(destination+'/api/files/local/', ''))
     print(colored("Type: ", attrs=['bold'])+data['type'])
     try:
-        print(colored("Size: ", attrs=['bold'])+str(round(data['size']/1048576.0,2))+" MB")
+        print(colored("Size: ", attrs=['bold']) +
+              str(round(data['size']/1048576.0, 2))+" MB")
     except KeyError:
         pass
     if data['type'] == 'machinecode':
         try:
-            print(colored("Estimated Print Time: ", attrs=['bold'])+str(datetime.timedelta(seconds=data['gcodeAnalysis']['estimatedPrintTime'])).split(".")[0])
+            print(colored("Estimated Print Time: ", attrs=['bold'])+str(datetime.timedelta(
+                seconds=data['gcodeAnalysis']['estimatedPrintTime'])).split(".")[0])
         except KeyError:
             pass
         try:
-            print(colored("Successful Prints: ", attrs=['bold'])+str(data['prints']['success']))
+            print(colored("Successful Prints: ", attrs=[
+                  'bold'])+str(data['prints']['success']))
         except KeyError:
             pass
         try:
-            print(colored("Failed Prints: ", attrs=['bold'])+str(data['prints']['failure']))
+            print(colored("Failed Prints: ", attrs=[
+                  'bold'])+str(data['prints']['failure']))
         except KeyError:
             pass
     sys.exit(0)
 
-com_files_info = coms_files.add_parser('info', description='get info on a file or folder', help='get info on a file or folder')
+
+com_files_info = coms_files.add_parser(
+    'info', description='get info on a file or folder', help='get info on a file or folder')
 com_files_info.set_defaults(func=files_info)
 com_files_info.add_argument('path', type=str, help='path to file/folder')
+
 
 def files_upload(args):
     if not os.path.exists(args.path):
@@ -591,11 +751,12 @@ def files_upload(args):
         sys.exit(1)
     data = caller.fileUpload(args.path)
 
-    if data==415:
+    if data == 415:
         print(colored("Invalid file type", 'red', attrs=['bold']))
         sys.exit(1)
-    if data==409:
-        print(colored("File upload is in conflict with server state", 'red', attrs=['bold']))
+    if data == 409:
+        print(colored("File upload is in conflict with server state",
+                      'red', attrs=['bold']))
         sys.exit(1)
     if type(data) is dict:
         print(colored("File uploaded to OctoPrint", 'green', attrs=['bold']))
@@ -604,11 +765,16 @@ def files_upload(args):
         print(colored("Unable to upload file", 'red', attrs=['bold']))
         sys.exit(0)
 
-com_files_upload = coms_files.add_parser('upload', description='upload a file to the server', help='upload a file to the server')
-com_files_upload.set_defaults(func=files_upload)
-com_files_upload.add_argument('path', type=str, help='path to local file to upload')
 
-opt_config = optionals.add_argument('-c', '--config', type=str, dest='config_path', action='store', help='custom path to config file')
+com_files_upload = coms_files.add_parser(
+    'upload', description='upload a file to the server', help='upload a file to the server')
+com_files_upload.set_defaults(func=files_upload)
+com_files_upload.add_argument(
+    'path', type=str, help='path to local file to upload')
+
+opt_config = optionals.add_argument(
+    '-c', '--config', type=str, dest='config_path', action='store', help='custom path to config file')
+
 
 def main():
     options = parser.parse_args()
@@ -620,7 +786,7 @@ def main():
             print("Configuration file is not complete or does not exist")
             sys.exit(1)
     else:
-        if loadConfig(os.path.join(sys.path[0],'config.ini')):
+        if loadConfig(os.path.join(sys.path[0], 'config.ini')):
             pass
         elif loadConfig(os.path.expanduser('~/.config/octoprint-cli.ini')):
             pass
@@ -630,9 +796,10 @@ def main():
     init_config()
 
     def updateCheck():
-        request = requests.get('https://api.github.com/repos/UserBlackBox/octoprint-cli/releases/latest')
+        request = requests.get(
+            'https://api.github.com/repos/UserBlackBox/octoprint-cli/releases/latest')
         if request.status_code == 200:
-            v = lambda t: tuple(map(int,t.split('-')[0].split('.')))
+            def v(t): return tuple(map(int, t.split('-')[0].split('.')))
             if v(request.json()['tag_name'][1:]) > v(__version__):
                 print("octoprint-cli can be updated using pip")
 
@@ -646,8 +813,8 @@ def main():
         return args[0]
 
     global colored
-    color = True #termcolor configuration
-    if os.name=='nt':
+    color = True  # termcolor configuration
+    if os.name == 'nt':
         colored = nt_colored
         color = False
     try:
@@ -660,7 +827,8 @@ def main():
         colored = nt_colored
 
     if caller.connectionTest() == False:
-        print(colored("OctoPrint server cannot be reached", 'red', attrs=['bold']))
+        print(colored("OctoPrint server cannot be reached",
+                      'red', attrs=['bold']))
         sys.exit(1)
     if caller.authTest() == False:
         print(colored("X-API-Key is incorrect", 'red', attrs=['bold']))
@@ -672,6 +840,7 @@ def main():
         print(colored("Invalid or Missing Arguments", 'red', attrs=['bold']))
         print(parser.format_help())
         sys.exit(2)
+
 
 if __name__ == "__main__":
     main()
