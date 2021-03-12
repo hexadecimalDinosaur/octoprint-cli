@@ -10,6 +10,7 @@ import requests
 from termcolor import colored
 from octoprint_cli import __version__
 from octoprint_cli.api import api
+#from api import api
 
 config = configparser.ConfigParser()
 parser = argparse.ArgumentParser(prog="octoprint-cli", description="Command line tool for controlling OctoPrint 3D printer servers",
@@ -19,6 +20,7 @@ subparsers = parser.add_subparsers()
 caller = None
 destination = None
 key = None
+verbose = False
 
 
 def loadConfig(path):
@@ -47,7 +49,7 @@ def init_config():
     if destination.endswith('/'):  # remove trailing slash
         destination = destination[:-1]
     global caller
-    caller = api(key, destination)
+    caller = api(destination, key, verbose=verbose)
 
 
 def version(args):
@@ -774,6 +776,8 @@ com_files_upload.add_argument(
 
 opt_config = optionals.add_argument(
     '-c', '--config', type=str, dest='config_path', action='store', help='custom path to config file')
+opt_verbose = optionals.add_argument(
+    '-v', '--verbose', dest='verbose', action='store_true', help='verbose output')
 
 
 def main():
@@ -793,6 +797,8 @@ def main():
         else:
             print("Configuration file is not complete or does not exist")
             sys.exit(1)
+    global verbose
+    verbose = options.verbose
     init_config()
 
     def updateCheck():
