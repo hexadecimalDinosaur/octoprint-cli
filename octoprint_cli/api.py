@@ -1,39 +1,49 @@
 import requests
+from sys import stderr
 
 class api:
     address = ""
     XapiKey = ""
     header = {}
+    verbose = False
 
-    def __init__(self, key, destination):
+    def __init__(self, destination, key, verbose=False):
         """api caller constructor method"""
         self.address = destination
         self.XapiKey = key
-        self.header['X-API-Key']=key
+        self.header['X-API-Key'] = key
+        self.verbose = verbose
 
     def get(self, target):
+        if self.verbose: print("INFO: GET request to %s"%(self.address+target), file=stderr)
         request = requests.get(self.address+target, headers=self.header)
         if request.status_code != 200:
+            if self.verbose: print("ERROR: Status code %d from request to %s"%(self.address+target, request.status_code), file=stderr)
             return request.status_code
         return request.json()
 
     def post(self, target, data):
         request = requests.post(self.address+target, headers=self.header, json=(data))
+        if self.verbose: print("INFO: POST request to %s with data %s and return code %d"%(self.address+target, data, request.status_code), file=stderr)
         return request.status_code
 
     def connectionTest(self):
+        if self.verbose: print("INFO: Running connection check", file=stderr)
         try:
             if isinstance(self.get("/api/version"),dict):
                 return True
             else:
                 return False
         except requests.ConnectionError:
+            if self.verbose: print("ERROR: Connection check failed", file=stderr)
             return False
 
     def authTest(self):
+        if self.verbose: print("INFO: Running authentication check", file=stderr)
         if isinstance(self.get("/api/job"),dict):
             return True
         else:
+            if self.verbose: print("ERROR: Authentication check failed", file=stderr)
             return False
 
     def getVersionInfo(self):
@@ -85,8 +95,10 @@ class api:
         return self.post("/api/job", {'command':'pause', 'action':action})
 
     def fileUpload(self, file):
+        if self.verbose: print("INFO: Reading file %s"%(file), file=stderr)
         fle = {'file':open(file,'rb'), 'filename':file}
         request = requests.post(self.address+"/api/files/local", headers=self.header, files=fle)
+        if self.verbose: print("INFO: POST request to %s and return code %d"%(self.address+"/api/files/local", request.status_code), file=stderr)
         if request.status_code == 201:
             return request.json()
         return request.status_code
