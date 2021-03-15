@@ -780,6 +780,15 @@ opt_verbose = optionals.add_argument(
     '-v', '--verbose', dest='verbose', action='store_true', help='verbose output')
 
 
+def updateCheck():
+    request = requests.get(
+        'https://api.github.com/repos/UserBlackBox/octoprint-cli/releases/latest')
+    if request.status_code == 200:
+        def v(t): return tuple(map(int, t.split('-')[0].split('.')))
+        if v(request.json()['tag_name'][1:]) > v(__version__):
+            print("octoprint-cli can be updated using pip")
+
+
 def main():
     options = parser.parse_args()
 
@@ -800,14 +809,6 @@ def main():
     global verbose
     verbose = options.verbose
     init_config()
-
-    def updateCheck():
-        request = requests.get(
-            'https://api.github.com/repos/UserBlackBox/octoprint-cli/releases/latest')
-        if request.status_code == 200:
-            def v(t): return tuple(map(int, t.split('-')[0].split('.')))
-            if v(request.json()['tag_name'][1:]) > v(__version__):
-                print("octoprint-cli can be updated using pip")
 
     try:
         if config['preferences']['UpdateCheck'] == 'true':
