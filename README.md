@@ -163,3 +163,5 @@ MaxBedTemp = 85
 </details>
 
 The `-h` or `--help` flag can bring up a help message for all commands
+
+The `-v` or `--verbose` flag can be used to view execution information like requests, useful for debugging configuration
