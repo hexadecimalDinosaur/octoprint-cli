@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setup(
     name="octoprint-cli",
     packages=find_packages(),
-    version="3.2.2",
+    version="3.3.0",
     entry_points={
         "console_scripts": [
             "octoprint-cli=octoprint_cli.__main__:main"
