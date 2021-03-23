@@ -10,7 +10,7 @@ import requests
 from termcolor import colored
 from octoprint_cli import __version__
 from octoprint_cli.api import api
-#from api import api
+from api import api
 
 config = configparser.ConfigParser()
 parser = argparse.ArgumentParser(prog="octoprint-cli", description="Command line tool for controlling OctoPrint 3D printer servers",
@@ -91,6 +91,21 @@ def continuous(args):
             datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
         print(colored("Print Time Left: ", attrs=[
               'bold'])+str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
+
+    def layersPrint():
+        data = caller.get("/plugin/DisplayLayerProgress/values")
+        if isinstance(data, dict):
+            print(colored("Current Layer: ", 'white', attrs=[
+              'bold'])+data['layer']['current']+"/"+data['layer']['total'])
+            print(colored("Current Height: ", 'white', attrs=[
+                'bold'])+data['height']['current']+'/'+data['height']['totalFormatted']+'mm')
+            print(colored("Average Layer Duration: ", 'white', attrs=[
+                'bold'])+data['layer']['averageLayerDuration'].replace('h', '').replace('s', '').replace('m', ''))
+            print(colored("Last Layer Duration: ", 'white', attrs=[
+                'bold'])+data['layer']['lastLayerDuration'].replace('h', '').replace('s', '').replace('m', ''))
+            return 4
+        return 0
+
     try:
         while True:
             lines = 0
@@ -120,6 +135,7 @@ def continuous(args):
                 data = caller.get('/api/job')
                 print(colored('Printing', 'green', attrs=['bold']))
                 jobPrint()
+                lines += layersPrint()
                 print()
                 lines += tempPrint()
                 print()
@@ -130,6 +146,7 @@ def continuous(args):
                 data = caller.get('/api/job')
                 print(colored('Paused', 'yellow', attrs=['bold']))
                 jobPrint()
+                lines += layersPrint()
                 print()
                 lines += tempPrint()
                 print()
