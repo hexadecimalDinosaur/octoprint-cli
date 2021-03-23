@@ -10,7 +10,7 @@ import requests
 from termcolor import colored
 from octoprint_cli import __version__
 from octoprint_cli.api import api
-from api import api
+# from api import api
 
 config = configparser.ConfigParser()
 parser = argparse.ArgumentParser(prog="octoprint-cli", description="Command line tool for controlling OctoPrint 3D printer servers",
@@ -59,7 +59,8 @@ def version(args):
 
 
 com_version = subparsers.add_parser(
-    'version', description='get OctoPrint version', help='get OctoPrint version')
+    'version', description='get OctoPrint version',
+    help='get OctoPrint version')
 com_version.set_defaults(func=version)
 
 
@@ -96,7 +97,7 @@ def continuous(args):
         data = caller.get("/plugin/DisplayLayerProgress/values")
         if isinstance(data, dict):
             print(colored("Current Layer: ", 'white', attrs=[
-              'bold'])+data['layer']['current']+"/"+data['layer']['total'])
+                'bold'])+data['layer']['current']+"/"+data['layer']['total'])
             print(colored("Current Height: ", 'white', attrs=[
                 'bold'])+data['height']['current']+'/'+data['height']['totalFormatted']+'mm')
             print(colored("Average Layer Duration: ", 'white', attrs=[
@@ -236,7 +237,7 @@ def print_status(args):
     state = caller.getState()
     if state == 'Offline':  # printer disconnected
         print(colored("Printer Disconnected", 'red', attrs=['bold']))
-    elif state.startswith('Offline'):  # Offline status with error message following
+    elif state.startswith('Offline'):  # Offline status with error message
         print(colored("Printer Disconnected", 'red', attrs=['bold']))
         print(state)
     elif state.startswith('Error'):  # Error status
@@ -303,7 +304,8 @@ def print_status(args):
 
 
 com_print_status = coms_print.add_parser(
-    'status', description='view print job status', help='view print job status')
+    'status', description='view print job status',
+    help='view print job status')
 com_print_status.set_defaults(func=print_status)
 
 
@@ -324,13 +326,14 @@ def print_select(args):
 
 
 com_print_select = coms_print.add_parser(
-    'select', description='select file on server to load', help='select file on server to load')
+    'select', description='select file on server to load',
+    help='select file on server to load')
 com_print_select.set_defaults(func=print_select)
 com_print_select.add_argument('path')
 
 
 def print_start(args):
-    if caller.getFile() == None:
+    if caller.getFile() is None:
         print(colored("No file has been loaded", 'red', attrs=['bold']))
         sys.exit(1)
     code = caller.printRequests('start')
@@ -346,7 +349,8 @@ def print_start(args):
 
 
 com_print_start = coms_print.add_parser(
-    'start', description='start print job on selected file', help='start print job on selected file')
+    'start', description='start print job on selected file',
+    help='start print job on selected file')
 com_print_start.set_defaults(func=print_start)
 
 
@@ -364,7 +368,8 @@ def print_cancel(args):
 
 
 com_print_cancel = coms_print.add_parser(
-    'cancel', description='cancel current print job', help='cancel current print job')
+    'cancel', description='cancel current print job',
+    help='cancel current print job')
 com_print_cancel.set_defaults(func=print_cancel)
 
 
@@ -382,7 +387,8 @@ def print_pause(args):
 
 
 com_print_pause = coms_print.add_parser(
-    'pause', description='pause current print job', help='pause current print job')
+    'pause', description='pause current print job',
+    help='pause current print job')
 com_print_pause.set_defaults(func=print_pause)
 
 
@@ -400,11 +406,13 @@ def print_resume(args):
 
 
 com_print_resume = coms_print.add_parser(
-    'resume', description='resume current print job', help='resume current print job')
+    'resume', description='resume current print job',
+    help='resume current print job')
 com_print_resume.set_defaults(func=print_resume)
 
 com_connection = subparsers.add_parser(
-    'connection', description='printer connection commands', help='printer connection commands')
+    'connection', description='printer connection commands',
+    help='printer connection commands')
 coms_connections = com_connection.add_subparsers()
 
 
@@ -433,7 +441,8 @@ def connection_status(args):
 
 
 com_connection_status = coms_connections.add_parser(
-    'status', description='get printer connection status', help='get printer connection status')
+    'status', description='get printer connection status',
+    help='get printer connection status')
 com_connection_status.set_defaults(func=connection_status)
 
 
@@ -465,7 +474,8 @@ com_connection_connect.set_defaults(func=connection_connect)
 com_connection_connect.add_argument(
     '-p', '--port', type=str, dest='port', action='store', help='serial port')
 com_connection_connect.add_argument(
-    '-b', '--baudrate', type=int, dest='baudrate', action='store', help='connection baudrate')
+    '-b', '--baudrate', type=int, dest='baudrate', action='store',
+    help='connection baudrate')
 
 
 def connection_disconnect(args):
@@ -480,11 +490,13 @@ def connection_disconnect(args):
 
 
 com_connection_disconnect = coms_connections.add_parser(
-    'disconnect', description='disconnect from printer', help='disconnect from printer')
+    'disconnect', description='disconnect from printer',
+    help='disconnect from printer')
 com_connection_disconnect.set_defaults(func=connection_disconnect)
 
 com_temp = subparsers.add_parser(
-    'temp', description='printer temperature commands', help='printer temperature commands')
+    'temp', description='printer temperature commands',
+    help='printer temperature commands')
 coms_temp = com_temp.add_subparsers()
 
 
@@ -506,7 +518,8 @@ def temp_status(args):
 
 
 com_temp_status = coms_temp.add_parser(
-    'status', description='view temperature status of extruder and print bed', help='view temperature status of extruder and print bed')
+    'status', description='view temperature status of extruder and print bed',
+    help='view temperature status of extruder and print bed')
 com_temp_status.set_defaults(func=temp_status)
 
 
@@ -533,10 +546,12 @@ def temp_extruder(args):
 
 
 com_temp_extruder = coms_temp.add_parser(
-    'extruder', description='set extruder target temperature', help='set extruder target temperature')
+    'extruder', description='set extruder target temperature',
+    help='set extruder target temperature')
 com_temp_extruder.set_defaults(func=temp_extruder)
 com_temp_extruder.add_argument(
-    'temperature', type=int, help='target temperature, if set to 0 the extruder will be turned off')
+    'temperature', type=int,
+    help='target temperature, if set to 0 the extruder will be turned off')
 
 
 def temp_bed(args):
@@ -563,13 +578,15 @@ def temp_bed(args):
 
 
 com_temp_bed = coms_temp.add_parser(
-    'bed', description='set print bed target temperature', help='set print bed target temperature')
+    'bed', description='set print bed target temperature',
+    help='set print bed target temperature')
 com_temp_bed.set_defaults(func=temp_bed)
 com_temp_bed.add_argument('temperature', type=int,
                           help='target temperature, if set to 0 the bed will be turned off')
 
 com_system = subparsers.add_parser(
-    'system', description='server management commands', help='server management commands')
+    'system', description='server management commands',
+    help='server management commands')
 coms_system = com_system.add_subparsers()
 
 
@@ -587,7 +604,8 @@ def system_restart(args):
 
 
 com_system_restart = coms_system.add_parser(
-    'restart', description='restart OctoPrint server', help='restart OctoPrint server')
+    'restart', description='restart OctoPrint server',
+    help='restart OctoPrint server')
 com_system_restart.set_defaults(func=system_restart)
 
 
@@ -605,7 +623,8 @@ def system_restart_safe(args):
 
 
 com_system_restart_safe = coms_system.add_parser(
-    'restart-safe', description='restart OctoPrint server to safe mode', help='restart OctoPrint server to safe mode')
+    'restart-safe', description='restart OctoPrint server to safe mode',
+    help='restart OctoPrint server to safe mode')
 com_system_restart_safe.set_defaults(func=system_restart_safe)
 
 
@@ -623,7 +642,8 @@ def system_reboot(args):
 
 
 com_system_reboot = coms_system.add_parser(
-    'reboot', description='reboot OctoPrint server', help='reboot OctoPrint server')
+    'reboot', description='reboot OctoPrint server',
+    help='reboot OctoPrint server')
 com_system_reboot.set_defaults(func=system_reboot)
 
 
@@ -641,11 +661,13 @@ def system_shutdown(args):
 
 
 com_system_shutdown = coms_system.add_parser(
-    'shutdown', description='shutdown OctoPrint server', help='shutdown OctoPrint server')
+    'shutdown', description='shutdown OctoPrint server',
+    help='shutdown OctoPrint server')
 com_system_shutdown.set_defaults(func=system_shutdown)
 
 com_files = subparsers.add_parser(
-    'files', description='server file management commands', help='server file management commands')
+    'files', description='server file management commands',
+    help='server file management commands')
 coms_files = com_files.add_subparsers()
 
 
@@ -712,10 +734,12 @@ def files_list(args):
 
 
 com_files_list = coms_files.add_parser(
-    'list', description='list files from server', help='list files from server')
+    'list', description='list files from server',
+    help='list files from server')
 com_files_list.set_defaults(func=files_list)
 com_files_list.add_argument('-p', '--path', type=str, dest='path',
-                            action='store', help='path for listing files from a folder')
+                            action='store',
+                            help='path for listing files from a folder')
 com_files_list_filters = com_files_list.add_mutually_exclusive_group()
 com_files_list_filters.add_argument(
     '--folders', help='show only folders', action='store_true')
@@ -759,7 +783,8 @@ def files_info(args):
 
 
 com_files_info = coms_files.add_parser(
-    'info', description='get info on a file or folder', help='get info on a file or folder')
+    'info', description='get info on a file or folder',
+    help='get info on a file or folder')
 com_files_info.set_defaults(func=files_info)
 com_files_info.add_argument('path', type=str, help='path to file/folder')
 
@@ -786,15 +811,18 @@ def files_upload(args):
 
 
 com_files_upload = coms_files.add_parser(
-    'upload', description='upload a file to the server', help='upload a file to the server')
+    'upload', description='upload a file to the server',
+    help='upload a file to the server')
 com_files_upload.set_defaults(func=files_upload)
 com_files_upload.add_argument(
     'path', type=str, help='path to local file to upload')
 
 opt_config = optionals.add_argument(
-    '-c', '--config', type=str, dest='config_path', action='store', help='custom path to config file')
+    '-c', '--config', type=str, dest='config_path', action='store',
+    help='custom path to config file')
 opt_verbose = optionals.add_argument(
-    '-v', '--verbose', dest='verbose', action='store_true', help='verbose output')
+    '-v', '--verbose', dest='verbose', action='store_true',
+    help='verbose output')
 
 
 def updateCheck():
@@ -809,7 +837,7 @@ def updateCheck():
 def main():
     options = parser.parse_args()
 
-    if options.config_path != None:
+    if options.config_path is not None:
         if loadConfig(options.config_path):
             pass
         else:
@@ -847,14 +875,14 @@ def main():
             color = False
     except KeyError:
         pass
-    if color != True:
+    if not color:
         colored = nt_colored
 
-    if caller.connectionTest() == False:
+    if not caller.connectionTest():
         print(colored("OctoPrint server cannot be reached",
                       'red', attrs=['bold']))
         sys.exit(1)
-    if caller.authTest() == False:
+    if not caller.authTest():
         print(colored("X-API-Key is incorrect", 'red', attrs=['bold']))
         sys.exit(1)
 
