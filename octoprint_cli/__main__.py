@@ -88,10 +88,16 @@ def continuous(args):
               'bold']) + data['job']['file']['name'])
         print(colored("Progress: ", attrs=[
               'bold'])+str(round(data['progress']['completion'], 2))+"%")
-        print(colored("Estimated Print Time: ", attrs=['bold']) + str(
-            datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
-        print(colored("Print Time Left: ", attrs=[
-              'bold'])+str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
+        if data['job']['estimatedPrintTime']:
+            print(colored("Estimated Print Time: ", attrs=['bold']) + str(
+                datetime.timedelta(seconds=data['job']['estimatedPrintTime'])).split(".")[0])
+        else:
+            print(colored("Estimated Print Time", attrs=['bold']) + "unavailable")
+        if data['progress']['printTimeLeft']:
+            print(colored("Print Time Left: ", attrs=[
+                'bold'])+str(datetime.timedelta(seconds=data['progress']['printTimeLeft'])).split(".")[0])
+        else:
+            print(colored("Print Time Left: ", attrs=['bold']) + "unavailable")
 
     def layersPrint():
         data = caller.get("/plugin/DisplayLayerProgress/values")
