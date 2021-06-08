@@ -32,7 +32,8 @@ class api:
                                 headers=self.header, json=(data))
         if self.verbose:
             print("INFO: POST request to %s with data %s and return code %d" %
-                  (self.address+target, data, request.status_code), file=stderr)
+                  (self.address+target, data, request.status_code),
+                  file=stderr)
         return request.status_code
 
     def connectionTest(self):
@@ -72,6 +73,8 @@ class api:
 
     def getTimeLeft(self):
         time = self.get("/api/job")['progress']['printTimeLeft']
+        if not time:
+            return "unavailable"
         hours = int(time//3600)
         if len(str(hours)) == 1:
             hours = "0"+str(hours)
@@ -87,6 +90,8 @@ class api:
 
     def getTotalTime(self):
         time = self.get("/api/job")['job']['estimatedPrintTime']
+        if not time:
+            return "unavailable"
         hours = int(time//3600)
         if len(str(hours)) == 1:
             hours = "0"+str(hours)
@@ -114,7 +119,8 @@ class api:
             self.address+"/api/files/local", headers=self.header, files=fle)
         if self.verbose:
             print("INFO: POST request to %s and return code %d" % (
-                self.address+"/api/files/local", request.status_code), file=stderr)
+                self.address+"/api/files/local", request.status_code),
+                file=stderr)
         if request.status_code == 201:
             return request.json()
         return request.status_code
