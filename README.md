@@ -1,6 +1,6 @@
 # octoprint-cli
 
-[![version](https://img.shields.io/badge/dynamic/json?color=blue&label=version&query=tag_name&url=https%3A%2F%2Fapi.github.com%2Frepos%2Fuserblackbox%2Foctoprint-cli%2Freleases%2Flatest&style=flat-square)](https://github.com/UserBlackBox/octoprint-cli/releases/latest) [![license](https://img.shields.io/badge/dynamic/json?color=brightgreen&label=license&query=license.key&url=https%3A%2F%2Fapi.github.com%2Frepos%2FUserBlackBox%2Foctoprint-cli&style=flat-square)](https://github.com/UserBlackBox/octoprint-cli/blob/master/LICENSE)
+[![version](https://img.shields.io/badge/dynamic/json?color=blue&label=version&query=tag_name&url=https%3A%2F%2Fapi.github.com%2Frepos%2Fuserblackbox%2Foctoprint-cli%2Freleases%2Flatest&style=flat-square)](https://github.com/UserBlackBox/octoprint-cli/releases/latest) [![license](https://img.shields.io/badge/dynamic/json?color=brightgreen&label=license&query=license.key&url=https%3A%2F%2Fapi.github.com%2Frepos%2FUserBlackBox%2Foctoprint-cli&style=flat-square)](https://github.com/UserBlackBox/octoprint-cli/blob/master/LICENSE) ![build](https://img.shields.io/github/workflow/status/UserBlackBox/octoprint-cli/Python%20application?style=flat-square) ![size](https://img.shields.io/github/languages/code-size/UserBlackBox/octoprint-cli?style=flat-square) ![downloads](https://img.shields.io/pypi/dd/octoprint-cli?style=flat-square)
 
 ![icon](https://raw.githubusercontent.com/UserBlackBox/octoprint-cli/master/icon/icon.png)
 
