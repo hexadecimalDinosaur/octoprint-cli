@@ -1,5 +1,6 @@
 import requests
 from sys import stderr
+from functools import lru_cache
 
 
 class api:
@@ -15,7 +16,20 @@ class api:
         self.header['X-API-Key'] = key
         self.verbose = verbose
 
+    @lru_cache
     def get(self, target):
+        if self.verbose:
+            print("INFO: GET request to %s" %
+                  (self.address+target), file=stderr)
+        request = requests.get(self.address+target, headers=self.header)
+        if request.status_code != 200:
+            if self.verbose:
+                print("ERROR: Status code %d from request to %s" %
+                      (self.address+target, request.status_code), file=stderr)
+            return request.status_code
+        return request.json()
+
+    def get_cacheless(self, target):
         if self.verbose:
             print("INFO: GET request to %s" %
                   (self.address+target), file=stderr)
