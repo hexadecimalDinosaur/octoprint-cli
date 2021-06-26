@@ -9,8 +9,8 @@ import math
 import requests
 from termcolor import colored
 from octoprint_cli import __version__
-# from octoprint_cli.api import api
-from api import api
+from octoprint_cli.api import api
+# from api import api
 
 config = configparser.ConfigParser()
 parser = argparse.ArgumentParser(prog="octoprint-cli", description="Command line tool for controlling OctoPrint 3D printer servers",
