@@ -9,8 +9,8 @@ import math
 import requests
 from termcolor import colored
 from octoprint_cli import __version__
-from octoprint_cli.api import api
-# from api import api
+# from octoprint_cli.api import api
+from api import api
 
 config = configparser.ConfigParser()
 parser = argparse.ArgumentParser(prog="octoprint-cli", description="Command line tool for controlling OctoPrint 3D printer servers",
@@ -68,7 +68,7 @@ def continuous(args):
     def tempPrint():
         lines = 0
         print(colored("Temperature Status", attrs=['bold', 'underline']))
-        data2 = caller.get('/api/printer')
+        data2 = caller.get_cacheless('/api/printer')
         print(colored("Extruder Temp: ", attrs=[
               'bold']) + str(data2['temperature']['tool0']['actual'])+"°C")
         print(colored("Extruder Target: ", attrs=[
@@ -83,7 +83,7 @@ def continuous(args):
         return lines
 
     def jobPrint():
-        data = caller.get('/api/job')
+        data = caller.get_cacheless('/api/job')
         print(colored("Loaded File: ", attrs=[
               'bold']) + data['job']['file']['name'])
         print(colored("Progress: ", attrs=[
@@ -100,7 +100,7 @@ def continuous(args):
             print(colored("Print Time Left: ", attrs=['bold']) + "unavailable")
 
     def layersPrint():
-        data = caller.get("/plugin/DisplayLayerProgress/values")
+        data = caller.get_cacheless("/plugin/DisplayLayerProgress/values")
         if isinstance(data, dict):
             print(colored("Current Layer: ", 'white', attrs=[
                 'bold'])+data['layer']['current']+"/"+data['layer']['total'])
@@ -118,7 +118,7 @@ def continuous(args):
             lines = 0
             if not(caller.getState() in ('Operational', 'Printing', 'Paused', 'Pausing', 'Cancelling')):
                 print(colored(caller.getState(), 'red', attrs=['bold']))
-                data = caller.get('/api/connection')
+                data = caller.get_cacheless('/api/connection')
                 print(colored("Printer Profile: ", attrs=[
                       'bold']) + data['options']['printerProfiles'][0]['name'])
                 print(colored("Port: ", attrs=[
@@ -127,7 +127,7 @@ def continuous(args):
                       'bold']) + str(data['current']['baudrate']))
                 lines = 4
             if caller.getState() == 'Operational':
-                data = caller.get('/api/job')
+                data = caller.get_cacheless('/api/job')
                 print(colored('Printer Operational', 'green', attrs=['bold']))
                 if data['job']['file']['name']:
                     print(colored("Loaded File: ", attrs=[
@@ -139,7 +139,7 @@ def continuous(args):
                 tempPrint()
                 lines += 6
             if caller.getState() == 'Printing':
-                data = caller.get('/api/job')
+                data = caller.get_cacheless('/api/job')
                 print(colored('Printing', 'green', attrs=['bold']))
                 jobPrint()
                 lines += layersPrint()
@@ -150,7 +150,7 @@ def continuous(args):
                     (100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'], 2))+"% Complete")
                 lines += 8
             if caller.getState() == 'Paused':
-                data = caller.get('/api/job')
+                data = caller.get_cacheless('/api/job')
                 print(colored('Paused', 'yellow', attrs=['bold']))
                 jobPrint()
                 lines += layersPrint()
@@ -161,7 +161,7 @@ def continuous(args):
                     (100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'], 2))+"% Complete")
                 lines += 7
             if caller.getState() == 'Pausing':
-                data = caller.get('/api/job')
+                data = caller.get_cacheless('/api/job')
                 print(colored('Pausing', 'yellow', attrs=['bold']))
                 jobPrint()
                 print()
@@ -171,7 +171,7 @@ def continuous(args):
                     (100-data['progress']['completion'])/5))+"| "+str(round(data['progress']['completion'], 2))+"% Complete")
                 lines += 7
             if caller.getState() == 'Cancelling':
-                data = caller.get('/api/job')
+                data = caller.get_cacheless('/api/job')
                 print(colored('Cancelling', 'red', attrs=['bold']))
                 print(colored("Loaded File: ", attrs=[
                       'bold']) + data['job']['file']['name'])
