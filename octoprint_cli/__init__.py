@@ -12,4 +12,4 @@ source software.
 __author__ = "Ivy Fan-Chiang"
 __copyright__ = "Copyright 2020 Ivy Fan-Chiang"
 __license__ = "GNU GPL v3 or later"
-__version__ = "3.3.2"
+__version__ = "3.3.3"
