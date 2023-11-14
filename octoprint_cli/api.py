@@ -1,7 +1,8 @@
-import requests
-from sys import stderr
+from base64 import b64encode
 from functools import lru_cache
-
+from sys import stderr
+from urllib.parse import urlparse
+import requests
 
 class api:
     address = ""
@@ -15,6 +16,15 @@ class api:
         self.XApiKey = key
         self.header['X-API-Key'] = key
         self.verbose = verbose
+        try:
+            urlparts = urlparse(destination)
+            if urlparts.username and urlparts.password:
+                token = b64encode(f"{urlparts.username}:{urlparts.password}"
+                                  .encode()).decode()
+                self.header["Authorization"]  = f'Basic {token}'
+        except Exception as ex:
+            print("WARN: Failed to parse basic authorization: " % ex,
+                  file=stderr)
 
     @lru_cache
     def get(self, target):
